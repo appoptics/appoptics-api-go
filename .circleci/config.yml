@@ -21,6 +21,7 @@ jobs:
     steps:
       - checkout
 
-      # specify any bash command here prefixed with `run: `
+      # TODO: move this into a containerized build
+      - run: go get -u github.com/golang/dep/cmd/dep
       - run: dep ensure
       - run: make test
