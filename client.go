@@ -10,9 +10,19 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
+	"fmt"
+)
+
+const(
+	MajorVersion = 0
+	MinorVersion = 1
+	PatchVersion = 0
 )
 
 var (
+	// Version is the current version of this client
+	Version = fmt.Sprintf("%d.%d.%d", MajorVersion, MinorVersion, PatchVersion)
+
 	regexpIllegalNameChars = regexp.MustCompile("[^A-Za-z0-9.:_-]") // from https://www.AppOptics.com/docs/api/#measurements
 	ErrBadStatus           = errors.New("Received non-OK status from AppOptics POST")
 )
