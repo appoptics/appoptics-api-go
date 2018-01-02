@@ -2,79 +2,68 @@ package appoptics
 
 import "testing"
 
-func TestUpdateValue(t *testing.T)  {
-
+func TestUpdateValue(t *testing.T) {
 	guage := &Gauge{
-		Count: 2,
-		Sum: 3,
-		Min: 1,
-		Max: 2,
-		Last: 1,
+		Count: 3,
+		Sum:   8,
+		Min:   3,
+		Max:   5,
+		Last:  3,
 	}
 
-	guage.UpdateValue(4)
+	t.Run("UpdateValue", func(t *testing.T) {
+		newValue := int64(4)
+		preUpdate := *guage
+		guage.UpdateValue(newValue)
 
-	if guage.Count != 3 {
-		t.Errorf("expected Count to be 3 but was %d", guage.Count)
-	}
+		newCount := preUpdate.Count + 1
+		if guage.Count != newCount {
+			t.Errorf("expected Count to be %d but was %d", newCount, guage.Count)
+		}
 
-	if guage.Sum != 7 {
-		t.Errorf("expected Sum to be 7 but was %d", guage.Sum)
-	}
+		newSum := preUpdate.Sum + newValue
+		if guage.Sum != newSum {
+			t.Errorf("expected Sum to be %d but was %d", newSum, guage.Sum)
+		}
 
-	if guage.Min != 1 {
-		t.Errorf("expected Min to be 1 but was %d", guage.Min)
-	}
+		if guage.Min != 3 {
+			t.Errorf("expected Min to be 3 but was %d", guage.Min)
+		}
 
-	if guage.Max != 4 {
-		t.Errorf("expected Max to be 4 but was %d", guage.Max)
-	}
+		if guage.Max != 5 {
+			t.Errorf("expected Max to be 5 but was %d", guage.Max)
+		}
 
-	if guage.Last != 4 {
-		t.Errorf("expected Last to be 4 but was %d", guage.Last)
-	}
+		if guage.Last != 4 {
+			t.Errorf("expected Last to be 4 but was %d", guage.Last)
+		}
+	})
 
+	t.Run("UpdateValue with new Min", func(t *testing.T) {
+		newMin := int64(1)
+		guage.UpdateValue(newMin)
+
+		if guage.Min != newMin {
+			t.Errorf("expected Min to be %d but was %d", newMin, guage.Min)
+		}
+	})
+
+	t.Run("UpdateValue with new Max", func(t *testing.T) {
+		newMax := int64(7)
+		guage.UpdateValue(newMax)
+		if guage.Max != newMax {
+			t.Errorf("expected Max to be %d but was %d", newMax, guage.Max)
+		}
+	})
 }
 
-func TestUpdateValueWithMin(t *testing.T)  {
-	guage := &Gauge{
-		Count: 2,
-		Sum: 10,
-		Min: 4,
-		Max: 6,
-		Last: 6,
-	}
-
-	guage.UpdateValue(1)
-
-	if guage.Min != 1 {
-		t.Errorf("expected Min to be 1 but was %d", guage.Min)
-	}
-}
-
-func TestUpdateValueWithMax(t *testing.T)  {
-	guage := &Gauge{
-		Count: 2,
-		Sum: 10,
-		Min: 4,
-		Max: 6,
-		Last: 6,
-	}
-
-	guage.UpdateValue(7)
-
-	if guage.Max != 7 {
-		t.Errorf("expected Max to be 7 but was %d", guage.Max)
-	}
-}
-
-func TestUpdateWithZeroValues(t *testing.T)  {
+func TestUpdateWithZeroValues(t *testing.T) {
 	newGauge := Gauge{
 		Count: 2,
-		Sum: 3,
-		Min: 1,
-		Max: 2,
-		Last: 2,
+		Sum:   3,
+		Min:   1,
+		Max:   2,
+		Last:  2,
 	}
 
 	emptyGauge := &Gauge{}
@@ -103,21 +92,21 @@ func TestUpdateWithZeroValues(t *testing.T)  {
 
 }
 
-func TestUpdateAggregation(t *testing.T)  {
+func TestUpdateAggregation(t *testing.T) {
 	oldGauge := Gauge{
 		Count: 2,
-		Sum: 3,
-		Min: 1,
-		Max: 2,
-		Last: 2,
+		Sum:   3,
+		Min:   1,
+		Max:   2,
+		Last:  2,
 	}
 
 	newGauge := Gauge{
 		Count: 2,
-		Sum: 5,
-		Min: 2,
-		Max: 3,
-		Last: 3,
+		Sum:   5,
+		Min:   2,
+		Max:   3,
+		Last:  3,
 	}
 
 	oldGauge.Update(newGauge)
@@ -131,21 +120,21 @@ func TestUpdateAggregation(t *testing.T)  {
 	}
 }
 
-func TestUpdateWithNewMin(t *testing.T)  {
+func TestUpdateWithNewMin(t *testing.T) {
 	oldGauge := Gauge{
 		Count: 2,
-		Sum: 6,
-		Min: 2,
-		Max: 4,
-		Last: 2,
+		Sum:   6,
+		Min:   2,
+		Max:   4,
+		Last:  2,
 	}
 
 	newGauge := Gauge{
 		Count: 2,
-		Sum: 4,
-		Min: 1,
-		Max: 3,
-		Last: 3,
+		Sum:   4,
+		Min:   1,
+		Max:   3,
+		Last:  3,
 	}
 
 	oldGauge.Update(newGauge)
@@ -159,18 +148,18 @@ func TestUpdateWithNewMin(t *testing.T)  {
 func TestUpdateWithNewMax(t *testing.T) {
 	oldGauge := Gauge{
 		Count: 2,
-		Sum: 3,
-		Min: 1,
-		Max: 2,
-		Last: 2,
+		Sum:   3,
+		Min:   1,
+		Max:   2,
+		Last:  2,
 	}
 
 	newGauge := Gauge{
 		Count: 2,
-		Sum: 4,
-		Min: 1,
-		Max: 3,
-		Last: 3,
+		Sum:   4,
+		Min:   1,
+		Max:   3,
+		Last:  3,
 	}
 
 	oldGauge.Update(newGauge)
