@@ -10,7 +10,7 @@ func (s *TaggedMeasurementSet ) Tags() map[string] interface{}  {
 	return s.tags
 }
 
-// SetTags sets the unexported value of the unexported tags struct member and returns the struct
+// SetTags sets the value of the tags map
 func (s *TaggedMeasurementSet ) SetTags(tags map[string]interface{}) {
 	s.tags = tags
 }
