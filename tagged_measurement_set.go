@@ -5,6 +5,11 @@ type TaggedMeasurementSet struct {
 	tags map[string]interface{}
 }
 
+// Tags returns the tags map
+func (s *TaggedMeasurementSet ) Tags() map[string] interface{}  {
+	return s.tags
+}
+
 // SetTags sets the unexported value of the unexported tags struct member and returns the struct
 func (s *TaggedMeasurementSet ) SetTags(tags map[string]interface{}) {
 	s.tags = tags
