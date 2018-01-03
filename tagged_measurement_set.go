@@ -1,17 +1,18 @@
 package appoptics
 
-import (
-	ctxtags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
-	"golang.org/x/net/context"
-)
-
 type TaggedMeasurementSet struct {
 	*MeasurementSet
 	tags map[string]interface{}
 }
 
-func WithContextTags(ctx context.Context, m *MeasurementSet) *TaggedMeasurementSet {
-	return &TaggedMeasurementSet{m, ctxtags.Extract(ctx).Values()}
+// Tags returns the tags map
+func (s *TaggedMeasurementSet ) Tags() map[string] interface{}  {
+	return s.tags
+}
+
+// SetTags sets the value of the tags map
+func (s *TaggedMeasurementSet ) SetTags(tags map[string]interface{}) {
+	s.tags = tags
 }
 
 // GetCounter returns a SynchronizedCounter assigned to the specified key with tags, creating a new one
