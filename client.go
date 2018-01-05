@@ -174,7 +174,7 @@ func checkError(resp *http.Response) error {
 	if resp.StatusCode >= 299 {
 		dec := json.NewDecoder(resp.Body)
 		dec.Decode(&errResponse)
-		log.Printf("Error: %+v\n", errResponse)
+		log.Printf("error: %+v\n", errResponse)
 		return &errResponse
 	}
 	return nil
