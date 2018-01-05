@@ -17,7 +17,7 @@ const (
 
 type Reporter struct {
 	measurementSet *MeasurementSet
-	client         Client
+	client         LegacyClient
 	prefix         string
 
 	batchChan             chan *MeasurementsBatch
@@ -26,7 +26,7 @@ type Reporter struct {
 	globalTags map[string]string
 }
 
-func NewReporter(measurementSet *MeasurementSet, client Client, prefix string) *Reporter {
+func NewReporter(measurementSet *MeasurementSet, client LegacyClient, prefix string) *Reporter {
 	r := &Reporter{
 		measurementSet:        measurementSet,
 		client:                client,
