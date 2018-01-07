@@ -16,9 +16,9 @@ const (
 )
 
 type Reporter struct {
-	measurementSet *MeasurementSet
-	client         Client
-	prefix         string
+	measurementSet      *MeasurementSet
+	measurementsService *MeasurementsService
+	prefix              string
 
 	batchChan             chan *MeasurementsBatch
 	measurementSetReports chan *MeasurementSetReport
@@ -26,10 +26,10 @@ type Reporter struct {
 	globalTags map[string]string
 }
 
-func NewReporter(measurementSet *MeasurementSet, client Client, prefix string) *Reporter {
+func NewReporter(measurementSet *MeasurementSet, ms *MeasurementsService, prefix string) *Reporter {
 	r := &Reporter{
 		measurementSet:        measurementSet,
-		client:                client,
+		measurementsService:   ms,
 		prefix:                prefix,
 		batchChan:             make(chan *MeasurementsBatch, 100),
 		measurementSetReports: make(chan *MeasurementSetReport, 1000),
@@ -58,7 +58,7 @@ func (r *Reporter) postMeasurementBatches() {
 		tryCount := 0
 		for {
 			log.Debug("Uploading librato measurements batch", "time", time.Unix(batch.Time, 0), "numMeasurements", len(batch.Measurements), "globalTags", r.globalTags)
-			err := r.client.Post(batch)
+			_, err := r.measurementsService.Create(batch)
 			if err == nil {
 				break
 			}
@@ -107,6 +107,7 @@ func (r *Reporter) flushReport(report *MeasurementSetReport) {
 		}
 		addMeasurement(m)
 	}
+	// TODO: refactor to use guage methods
 	for key, gauge := range report.Gauges {
 		metricName, tags := parseMeasurementKey(key)
 		m := Measurement{
