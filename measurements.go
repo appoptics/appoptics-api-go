@@ -13,6 +13,7 @@ type Measurement struct {
 	Name       string                 `json:"name"`
 	Tags       map[string]string      `json:"tags,omitempty"`
 	Value      interface{}            `json:"value,omitempty"`
+	Time       int64                  `json:"time"`
 	Count      interface{}            `json:"count,omitempty"`
 	Sum        interface{}            `json:"sum,omitempty"`
 	Min        interface{}            `json:"min,omitempty"`
