@@ -23,8 +23,10 @@ const (
 
 	// MeasurementPostMaxBatchSize defines the max number of Measurements to send to the API at once
 	MeasurementPostMaxBatchSize = 1000
-	defaultBaseURL              = "https://api.appoptics.com/v1/"
-	defaultMediaType            = "application/json"
+	// DefaultPersistenceErrorLimit sets the number of errors that will be allowed before persistence shuts down
+	DefaultPersistenceErrorLimit = 5
+	defaultBaseURL               = "https://api.appoptics.com/v1/"
+	defaultMediaType             = "application/json"
 )
 
 var (

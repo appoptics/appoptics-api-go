@@ -5,10 +5,11 @@ import (
 	"log"
 	"math"
 	"net/http"
-	"time"
 )
 
 // Measurement wraps the corresponding API construct: https://docs.appoptics.com/api/#measurements
+// Each Measurement represents a single timeseries value for an associated Metric. If AppOptics receives a Measurement
+// with a Name field that doesn't correspond to an existing Metric, a new Metric will be created.
 type Measurement struct {
 	Name       string                 `json:"name"`
 	Tags       map[string]string      `json:"tags,omitempty"`
@@ -22,19 +23,6 @@ type Measurement struct {
 	Attributes map[string]interface{} `json:"attributes,omitempty"`
 }
 
-// MeasurementsBatch is a collection of Measurements persisted to the API at the same time.
-// It can optionally have tags that are applied to all contained Measurements.
-type MeasurementsBatch struct {
-	// Measurements is the collection of timeseries entries being sent to the server
-	Measurements []Measurement `json:"measurements,omitempty"`
-	// Period is a slice of time measured in seconds, used in service-side aggregation
-	Period int64 `json:"period,omitempty"`
-	// Time is a Unix epoch timestamp used to align a group of Measurements on a time boundary
-	Time int64 `json:"time"`
-	// Tags are key-value identifiers that will be applied to all Measurements in the batch
-	Tags *map[string]string `json:"tags,omitempty"`
-}
-
 // MeasurementsCommunicator defines an interface for communicating with the Measurements portion of the AppOptics API
 type MeasurementsCommunicator interface {
 	Create(*MeasurementsBatch) (*http.Response, error)
@@ -43,14 +31,6 @@ type MeasurementsCommunicator interface {
 // MeasurementsService implements MeasurementsCommunicator
 type MeasurementsService struct {
 	client *Client
-}
-
-func NewMeasurementsBatch(m []Measurement, tags *map[string]string) *MeasurementsBatch {
-	return &MeasurementsBatch{
-		Time:         time.Now().UTC().Unix(),
-		Measurements: m,
-		Tags:         tags,
-	}
 }
 
 // Create persists the given MeasurementCollection to AppOptics

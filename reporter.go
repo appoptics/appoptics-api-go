@@ -12,9 +12,10 @@ const (
 	outputMeasurementsIntervalSeconds = 15
 	outputMeasurementsInterval        = outputMeasurementsIntervalSeconds * time.Second
 	maxLibratoRetries                 = 3
-	maxMeasurementsPerBatch           = 500
+	maxMeasurementsPerBatch           = 1000
 )
 
+// Reporter provides a way to persist data from a set collection of Guages and Counters at a regular interval
 type Reporter struct {
 	measurementSet      *MeasurementSet
 	measurementsService *MeasurementsService
@@ -26,6 +27,8 @@ type Reporter struct {
 	globalTags map[string]string
 }
 
+// NewReporter returns a reporter for a given MeasurementSet, providing a way to sync metric information
+// to AppOptics for a collection of running metrics.
 func NewReporter(measurementSet *MeasurementSet, ms *MeasurementsService, prefix string) *Reporter {
 	r := &Reporter{
 		measurementSet:        measurementSet,
@@ -89,7 +92,7 @@ func (r *Reporter) flushReport(report *MeasurementSetReport) {
 		batch.Measurements = append(batch.Measurements, measurement)
 		// Librato docs advise sending very large numbers of metrics in multiple HTTP requests; so we'll flush
 		// batches of 500 measurements at a time.
-		if len(batch.Measurements) >= 500 {
+		if len(batch.Measurements) >= maxMeasurementsPerBatch {
 			flushBatch()
 			resetBatch()
 		}
@@ -103,7 +106,7 @@ func (r *Reporter) flushReport(report *MeasurementSetReport) {
 			Tags: r.mergeGlobalTags(tags),
 		}
 		if value != 0 {
-			m.Value = value
+			m.Value = float64(value)
 		}
 		addMeasurement(m)
 	}
