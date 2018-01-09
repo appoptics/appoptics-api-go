@@ -3,7 +3,6 @@ package appoptics
 import (
 	"fmt"
 	"log"
-	"math"
 	"net/http"
 )
 
@@ -44,17 +43,14 @@ func (ms *MeasurementsService) Create(batch *MeasurementsBatch) (*http.Response,
 	return ms.client.Do(req, nil)
 }
 
-// dumpMeasurements is used for debugging
-func dumpMeasurements(measurements interface{}) {
-	ms := measurements.(MeasurementsBatch)
-	for i, measurement := range ms.Measurements {
-		floatValue, ok := measurement.Value.(float64)
-		if !ok {
-			continue
-		}
-		if math.IsNaN(floatValue) {
-			fmt.Println("Found at index ", i)
-			fmt.Printf("found in '%s'", measurement.Name)
+// printMeasurements pretty-prints the supplied measurements to stdout
+func printMeasurements(data []Measurement) {
+	for _, measurement := range data {
+		fmt.Printf("\nMetric name: '%s' \n", measurement.Name)
+		fmt.Printf("\t value: %d \n", measurement.Value)
+		fmt.Printf("\t\tTags: ")
+		for k, v := range measurement.Tags {
+			fmt.Printf("\n\t\t\t%s: %s", k, v)
 		}
 	}
 }

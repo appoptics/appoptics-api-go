@@ -109,10 +109,8 @@ func (c *Client) NewRequest(method, path string, body interface{}) (*http.Reques
 		buffer = &bytes.Buffer{}
 		encodeErr := json.NewEncoder(buffer).Encode(body)
 		if encodeErr != nil {
-			dumpMeasurements(body)
-			return nil, encodeErr
+			log.Println(encodeErr)
 		}
-
 	}
 	req, err := http.NewRequest(method, requestURL.String(), buffer)
 
@@ -182,10 +180,12 @@ func checkError(resp *http.Response) error {
 	return nil
 }
 
-func dumpBody(body interface{}) {
-	jsonData, err := json.MarshalIndent(body, "", "  ")
-	if err != nil {
-		log.Fatalln(err)
+// dumpResponse is a debugging function which dumps the HTTP response to stdout
+func dumpResponse(resp *http.Response) {
+	buf := new(bytes.Buffer)
+	fmt.Printf("response status: %s\n", resp.Status)
+	if resp.Body != nil {
+		buf.ReadFrom(resp.Body)
+		fmt.Printf("response body: %s\n\n", string(buf.Bytes()))
 	}
-	log.Println(string(jsonData))
 }
