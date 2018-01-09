@@ -121,6 +121,7 @@ LOOP:
 					bp.batchChan <- pushBatch
 					currentMeasurements = currentMeasurements[MeasurementPostMaxBatchSize:]
 				} else {
+					pushBatch.Measurements = currentMeasurements
 					bp.batchChan <- pushBatch
 					currentMeasurements = []Measurement{}
 				}
@@ -206,7 +207,9 @@ func (bp *BatchPersister) persistBatch(batch *MeasurementsBatch) error {
 		// TODO: make this conditional upon log level
 		dumpResponse(resp)
 	} else {
-		printMeasurements(batch.Measurements)
+		// TODO: make this more verbose upon log level
+		log.Printf("received %d Measurements for persistence\n", len(batch.Measurements))
+		//printMeasurements(batch.Measurements)
 	}
 	return nil
 }
