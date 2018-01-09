@@ -164,9 +164,11 @@ LOOP:
 				}
 			}
 		case <-bp.stopPersistingChan:
-			batch := <-bp.batchChan
-			if batch != nil {
-				bp.persistBatch(batch)
+			if len(bp.errors) > bp.errorLimit {
+				batch := <-bp.batchChan
+				if batch != nil {
+					bp.persistBatch(batch)
+				}
 			}
 			ticker.Stop()
 			break LOOP
