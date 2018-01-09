@@ -38,17 +38,21 @@ type BatchPersister struct {
 	stopChan chan bool
 	// errorChan is used to tally errors that occur in batching/persisting
 	errorChan chan error
+	// maximumPushInterval is the max time (in milliseconds) to wait before pushing a batch whether its length is equal
+	// to the MeasurementPostMaxBatchSize or not
+	maximumPushInterval int
 }
 
 // NewBatchPersister sets up a new instance of batched persistence capabilites using the provided MeasurementsCommunicator
 func NewBatchPersister(ms MeasurementsCommunicator) *BatchPersister {
 	return &BatchPersister{
-		ms:         ms,
-		errorLimit: DefaultPersistenceErrorLimit,
-		prepChan:   make(chan []Measurement),
-		batchChan:  make(chan *MeasurementsBatch),
-		stopChan:   make(chan bool),
-		errorChan:  make(chan error),
+		ms:                  ms,
+		errorLimit:          DefaultPersistenceErrorLimit,
+		prepChan:            make(chan []Measurement),
+		batchChan:           make(chan *MeasurementsBatch),
+		stopChan:            make(chan bool),
+		errorChan:           make(chan error),
+		maximumPushInterval: 2000,
 	}
 }
 
@@ -75,21 +79,45 @@ func (bp *BatchPersister) MeasurementsErrorChannel() chan<- error {
 	return bp.errorChan
 }
 
-// batchMeasurements reads slices of Measurements types off a channel and packages them
-// into batches conforming to the limitations imposed by the API.
+// MaxiumumPushIntervalMilliseconds returns the number of milliseconds the system will wait before pushing any
+// accumulated Measurements to AppOptics
+func (bp *BatchPersister) MaximumPushInterval() int {
+	return bp.maximumPushInterval
+}
+
+// SetMaximumPushInterval sets the number of milliseconds the system will wait before pushing any accumulated
+// Measurements to AppOptics
+func (bp *BatchPersister) SetMaximumPushInterval(ms int) {
+	bp.maximumPushInterval = ms
+}
+
+// batchMeasurements reads slices of Measurements off a channel and packages them into batches conforming to the
+// limitations imposed by the API. If Measurements are arriving slowly, collected Measurements will be pushed on an
+// interval defined by maximumPushIntervalMilliseconds
 func (bp *BatchPersister) batchMeasurements() {
-	var ms = []Measurement{}
+	var currentMeasurements = []Measurement{}
+	pushBatch := &MeasurementsBatch{}
+	ticker := time.NewTicker(time.Millisecond * time.Duration(bp.maximumPushInterval))
 LOOP:
 	for {
 		select {
-		case mslice := <-bp.prepChan:
-			ms = append(ms, mslice...)
-			if len(ms) >= MeasurementPostMaxBatchSize {
-				pushBatch := &MeasurementsBatch{
-					Measurements: ms[:MeasurementPostMaxBatchSize],
-				}
+		case receivedMeasurements := <-bp.prepChan:
+			currentMeasurements = append(currentMeasurements, receivedMeasurements...)
+			if len(currentMeasurements) >= MeasurementPostMaxBatchSize {
+				pushBatch.Measurements = currentMeasurements[:MeasurementPostMaxBatchSize]
 				bp.batchChan <- pushBatch
-				ms = ms[MeasurementPostMaxBatchSize:]
+				currentMeasurements = currentMeasurements[MeasurementPostMaxBatchSize:]
+			}
+		case <-ticker.C:
+			if len(currentMeasurements) > 0 {
+				if len(currentMeasurements) >= MeasurementPostMaxBatchSize {
+					pushBatch.Measurements = currentMeasurements[:MeasurementPostMaxBatchSize]
+					bp.batchChan <- pushBatch
+					currentMeasurements = currentMeasurements[MeasurementPostMaxBatchSize:]
+				} else {
+					bp.batchChan <- pushBatch
+					currentMeasurements = []Measurement{}
+				}
 			}
 		case <-bp.stopChan:
 			break LOOP
