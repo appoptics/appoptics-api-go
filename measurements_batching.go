@@ -5,7 +5,6 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
-	"github.com/solarwinds/prometheus2appoptics/config"
 )
 
 // MeasurementsBatch is a collection of Measurements persisted to the API at the same time.
@@ -44,10 +43,12 @@ type BatchPersister struct {
 	// maximumPushInterval is the max time (in milliseconds) to wait before pushing a batch whether its length is equal
 	// to the MeasurementPostMaxBatchSize or not
 	maximumPushInterval int
+	// sendStats is a flag for whether to persist to AppOptics or simply print messages to stdout
+	sendStats bool
 }
 
 // NewBatchPersister sets up a new instance of batched persistence capabilites using the provided MeasurementsCommunicator
-func NewBatchPersister(mc MeasurementsCommunicator) *BatchPersister {
+func NewBatchPersister(mc MeasurementsCommunicator, sendStats bool) *BatchPersister {
 	return &BatchPersister{
 		mc:                  mc,
 		errorLimit:          DefaultPersistenceErrorLimit,
@@ -59,6 +60,7 @@ func NewBatchPersister(mc MeasurementsCommunicator) *BatchPersister {
 		errorChan:           make(chan error),
 		errors:              []error{},
 		maximumPushInterval: 2000,
+		sendStats:           sendStats,
 	}
 }
 
@@ -196,7 +198,7 @@ LOOP:
 
 // persistBatch sends to the remote AppOptics endpoint unless config.SendStats() returns false, when it prints to stdout
 func (bp *BatchPersister) persistBatch(batch *MeasurementsBatch) error {
-	if config.SendStats() {
+	if bp.sendStats {
 		// TODO: make this conditional upon log level
 		log.Printf("persisting %d Measurements to AppOptics\n", len(batch.Measurements))
 		resp, err := bp.mc.Create(batch)
