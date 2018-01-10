@@ -128,12 +128,14 @@ LOOP:
 				}
 			}
 		case <-bp.stopBatchingChan:
+			fmt.Println("got stop")
 			ticker.Stop()
 			if len(currentMeasurements) > 0 {
 				if len(bp.errors) < bp.errorLimit {
 					bp.batchChan <- &MeasurementsBatch{Measurements: currentMeasurements[:MeasurementPostMaxBatchSize]}
 				}
 			}
+			close(bp.batchChan)
 			bp.stopPersistingChan <- true
 			bp.stopErrorChan <- true
 			break LOOP
