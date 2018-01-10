@@ -104,7 +104,6 @@ func (bp *BatchPersister) SetMaximumPushInterval(ms int) {
 // interval defined by maximumPushIntervalMilliseconds
 func (bp *BatchPersister) batchMeasurements() {
 	var currentMeasurements = []Measurement{}
-	pushBatch := &MeasurementsBatch{}
 	ticker := time.NewTicker(time.Millisecond * time.Duration(bp.maximumPushInterval))
 LOOP:
 	for {
@@ -112,12 +111,12 @@ LOOP:
 		case receivedMeasurements := <-bp.prepChan:
 			currentMeasurements = append(currentMeasurements, receivedMeasurements...)
 			if len(currentMeasurements) >= MeasurementPostMaxBatchSize {
-				pushBatch.Measurements = currentMeasurements[:MeasurementPostMaxBatchSize]
-				bp.batchChan <- pushBatch
+				bp.batchChan <- &MeasurementsBatch{Measurements: currentMeasurements[:MeasurementPostMaxBatchSize]}
 				currentMeasurements = currentMeasurements[MeasurementPostMaxBatchSize:]
 			}
 		case <-ticker.C:
 			if len(currentMeasurements) > 0 {
+				pushBatch := &MeasurementsBatch{}
 				if len(currentMeasurements) >= MeasurementPostMaxBatchSize {
 					pushBatch.Measurements = currentMeasurements[:MeasurementPostMaxBatchSize]
 					bp.batchChan <- pushBatch
@@ -132,8 +131,7 @@ LOOP:
 			ticker.Stop()
 			if len(currentMeasurements) > 0 {
 				if len(bp.errors) < bp.errorLimit {
-					pushBatch.Measurements = currentMeasurements[:MeasurementPostMaxBatchSize]
-					bp.batchChan <- pushBatch
+					bp.batchChan <- &MeasurementsBatch{Measurements: currentMeasurements[:MeasurementPostMaxBatchSize]}
 				}
 			}
 			bp.stopPersistingChan <- true
