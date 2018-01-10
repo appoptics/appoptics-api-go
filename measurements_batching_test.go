@@ -1,6 +1,7 @@
 package appoptics
 
 import (
+	"fmt"
 	"testing"
 	"time"
 )
@@ -69,5 +70,33 @@ func TestBatchPersister(t *testing.T) {
 		if measurementsInBatch != measurementsCount {
 			t.Errorf("expected Measurements in single batch to be %d but was %d", measurementsCount, measurementsInBatch)
 		}
+	})
+
+	t.Run("errors accumulate and stop batching at limit", func(t *testing.T) {
+		bp := NewBatchPersister(mms, false)
+		var pSig bool
+		var eSig bool
+		go bp.batchMeasurements()
+		go bp.managePersistenceErrors()
+
+		for i := 0; i < bp.errorLimit; i++ {
+			bp.errorChan <- fmt.Errorf("some error")
+		}
+
+		pSig = <-bp.stopPersistingChan
+		eSig = <-bp.stopErrorChan
+
+		if !pSig {
+			t.Errorf("expected to find a value on the stopPersistingChan")
+		}
+
+		if !eSig {
+			t.Errorf("expected to find a value on the stopPersistingChan")
+		}
+
+		if len(bp.errors) != bp.errorLimit {
+			t.Errorf("expected errors count (%d) to equal error limit (%d) but it did not", len(bp.errors), bp.errorLimit)
+		}
+
 	})
 }
