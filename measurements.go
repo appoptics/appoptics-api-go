@@ -6,6 +6,11 @@ import (
 	"net/http"
 )
 
+const (
+	// AggregationKey is the key in the Measurement attributes used to tell the AppOptics system to aggregate values
+	AggregationKey = "aggregate"
+)
+
 // Measurement wraps the corresponding API construct: https://docs.appoptics.com/api/#measurements
 // Each Measurement represents a single timeseries value for an associated Metric. If AppOptics receives a Measurement
 // with a Name field that doesn't correspond to an existing Metric, a new Metric will be created.
@@ -30,6 +35,15 @@ type MeasurementsCommunicator interface {
 // MeasurementsService implements MeasurementsCommunicator
 type MeasurementsService struct {
 	client *Client
+}
+
+// NewMeasurement returns a Measurement with the given name and an empty attributes map
+func NewMeasurement(name string) Measurement {
+	attrs := make(map[string]interface{})
+	return Measurement{
+		Name:       name,
+		Attributes: attrs,
+	}
 }
 
 // Create persists the given MeasurementCollection to AppOptics
