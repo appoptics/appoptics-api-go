@@ -12,13 +12,14 @@ const (
 	outputMeasurementsIntervalSeconds = 15
 	outputMeasurementsInterval        = outputMeasurementsIntervalSeconds * time.Second
 	maxLibratoRetries                 = 3
-	maxMeasurementsPerBatch           = 500
+	maxMeasurementsPerBatch           = 1000
 )
 
+// Reporter provides a way to persist data from a set collection of Guages and Counters at a regular interval
 type Reporter struct {
-	measurementSet *MeasurementSet
-	client         Client
-	prefix         string
+	measurementSet      *MeasurementSet
+	measurementsService *MeasurementsService
+	prefix              string
 
 	batchChan             chan *MeasurementsBatch
 	measurementSetReports chan *MeasurementSetReport
@@ -26,10 +27,12 @@ type Reporter struct {
 	globalTags map[string]string
 }
 
-func NewReporter(measurementSet *MeasurementSet, client Client, prefix string) *Reporter {
+// NewReporter returns a reporter for a given MeasurementSet, providing a way to sync metric information
+// to AppOptics for a collection of running metrics.
+func NewReporter(measurementSet *MeasurementSet, ms *MeasurementsService, prefix string) *Reporter {
 	r := &Reporter{
 		measurementSet:        measurementSet,
-		client:                client,
+		measurementsService:   ms,
 		prefix:                prefix,
 		batchChan:             make(chan *MeasurementsBatch, 100),
 		measurementSetReports: make(chan *MeasurementSetReport, 1000),
@@ -58,7 +61,7 @@ func (r *Reporter) postMeasurementBatches() {
 		tryCount := 0
 		for {
 			log.Debug("Uploading librato measurements batch", "time", time.Unix(batch.Time, 0), "numMeasurements", len(batch.Measurements), "globalTags", r.globalTags)
-			err := r.client.Post(batch)
+			_, err := r.measurementsService.Create(batch)
 			if err == nil {
 				break
 			}
@@ -89,7 +92,7 @@ func (r *Reporter) flushReport(report *MeasurementSetReport) {
 		batch.Measurements = append(batch.Measurements, measurement)
 		// Librato docs advise sending very large numbers of metrics in multiple HTTP requests; so we'll flush
 		// batches of 500 measurements at a time.
-		if len(batch.Measurements) >= 500 {
+		if len(batch.Measurements) >= maxMeasurementsPerBatch {
 			flushBatch()
 			resetBatch()
 		}
@@ -103,10 +106,11 @@ func (r *Reporter) flushReport(report *MeasurementSetReport) {
 			Tags: r.mergeGlobalTags(tags),
 		}
 		if value != 0 {
-			m.Value = value
+			m.Value = float64(value)
 		}
 		addMeasurement(m)
 	}
+	// TODO: refactor to use guage methods
 	for key, gauge := range report.Gauges {
 		metricName, tags := parseMeasurementKey(key)
 		m := Measurement{
