@@ -11,7 +11,7 @@ import (
 const (
 	outputMeasurementsIntervalSeconds = 15
 	outputMeasurementsInterval        = outputMeasurementsIntervalSeconds * time.Second
-	maxLibratoRetries                 = 3
+	maxRetries                        = 3
 	maxMeasurementsPerBatch           = 1000
 )
 
@@ -60,14 +60,14 @@ func (r *Reporter) postMeasurementBatches() {
 	for batch := range r.batchChan {
 		tryCount := 0
 		for {
-			log.Debug("Uploading librato measurements batch", "time", time.Unix(batch.Time, 0), "numMeasurements", len(batch.Measurements), "globalTags", r.globalTags)
+			log.Debug("Uploading AppOptics measurements batch", "time", time.Unix(batch.Time, 0), "numMeasurements", len(batch.Measurements), "globalTags", r.globalTags)
 			_, err := r.measurementsService.Create(batch)
 			if err == nil {
 				break
 			}
 			tryCount++
-			aborting := tryCount == maxLibratoRetries
-			log.Error("Error uploading librato measurements batch", "err", err, "tryCount", tryCount, "aborting", aborting)
+			aborting := tryCount == maxRetries
+			log.Error("Error uploading AppOptics measurements batch", "err", err, "tryCount", tryCount, "aborting", aborting)
 			if aborting {
 				break
 			}
@@ -90,7 +90,7 @@ func (r *Reporter) flushReport(report *MeasurementSetReport) {
 	}
 	addMeasurement := func(measurement Measurement) {
 		batch.Measurements = append(batch.Measurements, measurement)
-		// Librato docs advise sending very large numbers of metrics in multiple HTTP requests; so we'll flush
+		// AppOptics API docs advise sending very large numbers of metrics in multiple HTTP requests; so we'll flush
 		// batches of 500 measurements at a time.
 		if len(batch.Measurements) >= maxMeasurementsPerBatch {
 			flushBatch()
@@ -98,7 +98,7 @@ func (r *Reporter) flushReport(report *MeasurementSetReport) {
 		}
 	}
 	resetBatch()
-	report.Counts["num_librato_measurements"] = int64(len(report.Counts)) + int64(len(report.Gauges)) + 1
+	report.Counts["num_measurements"] = int64(len(report.Counts)) + int64(len(report.Gauges)) + 1
 	for key, value := range report.Counts {
 		metricName, tags := parseMeasurementKey(key)
 		m := Measurement{
