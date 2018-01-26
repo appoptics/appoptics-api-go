@@ -27,6 +27,7 @@ const (
 	DefaultPersistenceErrorLimit = 5
 	defaultBaseURL               = "https://api.appoptics.com/v1/"
 	defaultMediaType             = "application/json"
+	defaultUserAgentString       = "appoptics-api-go"
 )
 
 var (
@@ -71,16 +72,18 @@ type Client struct {
 	measurementsService MeasurementsCommunicator
 	// spacesService embeds the httpClient and implements access to the Spaces API
 	spacesService SpacesCommunicator
+	// userAgentString is placed in the User-Agent header
+	userAgentString string
 }
 
 // TODO: make this take an optional URL parameter so it can be used against Librato API
-func NewClient(token string) *Client {
+func NewClient(token string, opts ...func(*Client) error) *Client {
 	baseURL, _ := url.Parse(defaultBaseURL)
 	c := &Client{
-		token:   token,
-		baseURL: baseURL,
+		token:           token,
+		baseURL:         baseURL,
+		userAgentString: defaultUserAgentString,
 		httpClient: &http.Client{
-
 			Timeout: 30 * time.Second,
 			Transport: &http.Transport{
 				MaxIdleConnsPerHost: 4,
@@ -90,6 +93,10 @@ func NewClient(token string) *Client {
 	}
 	c.measurementsService = &MeasurementsService{c}
 	c.spacesService = &SpacesService{c}
+
+	for _, opt := range opts {
+		opt(c)
+	}
 
 	return c
 }
@@ -121,8 +128,29 @@ func (c *Client) NewRequest(method, path string, body interface{}) (*http.Reques
 	req.SetBasicAuth("token", c.token)
 	req.Header.Set("Accept", defaultMediaType)
 	req.Header.Set("Content-Type", defaultMediaType)
+	req.Header.Set("User-Agent", c.userAgentString)
 
 	return req, nil
+}
+
+// setUserAgent is a config function allowing setting of the User-Agent header in requests
+func setUserAgent(userAgentString string) func(*Client) error {
+	return func(c *Client) error {
+		c.userAgentString = userAgentString
+		return nil
+	}
+}
+
+func setBaseURL(urlString string) func(*Client) error {
+	return func(c *Client) error {
+		var altURL *url.URL
+		var err error
+		if altURL, err = url.Parse(urlString); err != nil {
+			return err
+		}
+		c.baseURL = altURL
+		return nil
+	}
 }
 
 // MeasurementsService represents the subset of the API that deals with AppOptics Measurements
