@@ -35,14 +35,14 @@ func TestNewClient_Customized(t *testing.T) {
 	altBaseURLString := "https://api.librato.com"
 
 	t.Run("custom user agent string", func(t *testing.T) {
-		c := NewClient(token, setUserAgent(altUserAgentString))
+		c := NewClient(token, SetUserAgent(altUserAgentString))
 		if c.userAgentString != altUserAgentString {
 			t.Errorf("expected '%s' to match '%s'", c.userAgentString, altUserAgentString)
 		}
 	})
 
 	t.Run("custom base URL", func(t *testing.T) {
-		c := NewClient(token, setBaseURL(altBaseURLString))
+		c := NewClient(token, SetBaseURL(altBaseURLString))
 		testAltBaseURL, _ := url.Parse(altBaseURLString)
 		if *c.baseURL != *testAltBaseURL {
 			t.Errorf("expected '%s' to match '%s'", *c.baseURL, *testAltBaseURL)

@@ -133,15 +133,16 @@ func (c *Client) NewRequest(method, path string, body interface{}) (*http.Reques
 	return req, nil
 }
 
-// setUserAgent is a config function allowing setting of the User-Agent header in requests
-func setUserAgent(userAgentString string) func(*Client) error {
+// SetUserAgent is a config function allowing setting of the User-Agent header in requests
+func SetUserAgent(userAgentString string) func(*Client) error {
 	return func(c *Client) error {
 		c.userAgentString = userAgentString
 		return nil
 	}
 }
 
-func setBaseURL(urlString string) func(*Client) error {
+// SetBaseURL is a config function allowing setting of the base URL the API is on
+func SetBaseURL(urlString string) func(*Client) error {
 	return func(c *Client) error {
 		var altURL *url.URL
 		var err error
