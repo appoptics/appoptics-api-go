@@ -15,20 +15,20 @@ var (
 	ctxMarkerKey = &ctxMarker{}
 )
 
-// MeasurementSet represents a map of SynchronizedCounters and SynchronizedGauges. All functions
+// MeasurementSet represents a map of SynchronizedCounters and SynchronizedSummarys. All functions
 // of MeasurementSet are safe for concurrent use.
 type MeasurementSet struct {
-	counters      map[string]*SynchronizedCounter
-	gauges        map[string]*SynchronizedGauge
-	countersMutex sync.RWMutex
-	gaugesMutex   sync.RWMutex
+	counters       map[string]*SynchronizedCounter
+	summaries      map[string]*SynchronizedSummary
+	countersMutex  sync.RWMutex
+	summariesMutex sync.RWMutex
 }
 
 // NewMeasurementSet returns a new empty MeasurementSet
 func NewMeasurementSet() *MeasurementSet {
 	return &MeasurementSet{
-		counters: map[string]*SynchronizedCounter{},
-		gauges:   map[string]*SynchronizedGauge{},
+		counters:  map[string]*SynchronizedCounter{},
+		summaries: map[string]*SynchronizedSummary{},
 	}
 }
 
@@ -50,22 +50,22 @@ func (s *MeasurementSet) GetCounter(key string) *SynchronizedCounter {
 	return counter
 }
 
-// GetGauge returns a SynchronizedGauge assigned to the specified key, creating a new one
+// GetSummary returns a SynchronizedSummary assigned to the specified key, creating a new one
 // if necessary.
-func (s *MeasurementSet) GetGauge(key string) *SynchronizedGauge {
-	s.gaugesMutex.RLock()
-	gauge, ok := s.gauges[key]
-	s.gaugesMutex.RUnlock()
+func (s *MeasurementSet) GetSummary(key string) *SynchronizedSummary {
+	s.summariesMutex.RLock()
+	summary, ok := s.summaries[key]
+	s.summariesMutex.RUnlock()
 	if !ok {
-		s.gaugesMutex.Lock()
-		gauge, ok = s.gauges[key]
+		s.summariesMutex.Lock()
+		summary, ok = s.summaries[key]
 		if !ok {
-			gauge = &SynchronizedGauge{}
-			s.gauges[key] = gauge
+			summary = &SynchronizedSummary{}
+			s.summaries[key] = summary
 		}
-		s.gaugesMutex.Unlock()
+		s.summariesMutex.Unlock()
 	}
-	return gauge
+	return summary
 }
 
 // Incr is a convenience function to get the specified Counter and call Incr on it. See Counter.Incr.
@@ -84,32 +84,32 @@ func (s *MeasurementSet) AddInt(key string, delta int) {
 	s.GetCounter(key).AddInt(delta)
 }
 
-// UpdateGaugeValue is a convenience to get the specified Gauge and call UpdateValue on it.
-// See Gauge.UpdateValue.
-func (s *MeasurementSet) UpdateGaugeValue(key string, val int64) {
-	s.GetGauge(key).UpdateValue(val)
+// UpdateSummaryValue is a convenience to get the specified Summary and call UpdateValue on it.
+// See Summary.UpdateValue.
+func (s *MeasurementSet) UpdateSummaryValue(key string, val int64) {
+	s.GetSummary(key).UpdateValue(val)
 }
 
-// UpdateGauge is a convenience to get the specified Gauge and call Update on it. See Gauge.Update.
-func (s *MeasurementSet) UpdateGauge(key string, other Gauge) {
-	s.GetGauge(key).Update(other)
+// UpdateSummary is a convenience to get the specified Summary and call Update on it. See Summary.Update.
+func (s *MeasurementSet) UpdateSummary(key string, other Summary) {
+	s.GetSummary(key).Update(other)
 }
 
-// Merge takes a MeasurementSetReport and merges all of it Counters and Gauges into this MeasurementSet.
-// This in turn calls Counter.Add for each Counter in the report, and Gauge.Update for each Gauge in
+// Merge takes a MeasurementSetReport and merges all of it Counters and Summarys into this MeasurementSet.
+// This in turn calls Counter.Add for each Counter in the report, and Summary.Update for each Summary in
 // the report. Any keys that do not exist in this MeasurementSet will be created.
 func (s *MeasurementSet) Merge(report *MeasurementSetReport) {
 	for key, value := range report.Counts {
 		s.GetCounter(key).Add(value)
 	}
-	for key, gauge := range report.Gauges {
-		s.GetGauge(key).Update(gauge)
+	for key, summary := range report.Summaries {
+		s.GetSummary(key).Update(summary)
 	}
 }
 
 // Reset generates a MeasurementSetReport with a copy of the state of each of the non-zero Counters and
-// Gauges in this MeasurementSet. Counters with a value of 0 and Gauges with a count of 0 are omitted.
-// All Counters and Gauges are reset to the zero/nil state but are never removed from this
+// Summarys in this MeasurementSet. Counters with a value of 0 and Summarys with a count of 0 are omitted.
+// All Counters and Summarys are reset to the zero/nil state but are never removed from this
 // MeasurementSet, so they can continue be used indefinitely.
 func (s *MeasurementSet) Reset() *MeasurementSetReport {
 	report := NewMeasurementSetReport()
@@ -121,19 +121,19 @@ func (s *MeasurementSet) Reset() *MeasurementSetReport {
 		}
 	}
 	s.countersMutex.Unlock()
-	s.gaugesMutex.Lock()
-	for key, syncGauge := range s.gauges {
-		gauge := syncGauge.Reset()
-		if gauge.Count != 0 {
-			report.Gauges[key] = gauge
+	s.summariesMutex.Lock()
+	for key, syncSummary := range s.summaries {
+		summary := syncSummary.Reset()
+		if summary.Count != 0 {
+			report.Summaries[key] = summary
 		}
 	}
-	s.gaugesMutex.Unlock()
+	s.summariesMutex.Unlock()
 	return report
 }
 
 // ContextWithMeasurementSet wraps the specified context with a MeasurementSet.
-// XXX TODO: add convenience methods to read that MeasurementSet and manipulate Counters/Gauges on it.
+// XXX TODO: add convenience methods to read that MeasurementSet and manipulate Counters/Summarys on it.
 func ContextWithMeasurementSet(ctx context.Context) context.Context {
 	return context.WithValue(ctx, ctxMarkerKey, NewMeasurementSet())
 }

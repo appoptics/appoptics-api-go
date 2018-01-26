@@ -15,7 +15,7 @@ const (
 	maxMeasurementsPerBatch           = 1000
 )
 
-// Reporter provides a way to persist data from a set collection of Guages and Counters at a regular interval
+// Reporter provides a way to persist data from a set collection of Summarys and Counters at a regular interval
 type Reporter struct {
 	measurementSet      *MeasurementSet
 	measurementsService *MeasurementsService
@@ -41,6 +41,7 @@ func NewReporter(measurementSet *MeasurementSet, ms *MeasurementsService, prefix
 	return r
 }
 
+// Start kicks off two goroutines that help batch and report metrics measurements to AppOptics.
 func (r *Reporter) Start() {
 	go r.postMeasurementBatches()
 	go r.flushReportsForever()
@@ -98,7 +99,7 @@ func (r *Reporter) flushReport(report *MeasurementSetReport) {
 		}
 	}
 	resetBatch()
-	report.Counts["num_measurements"] = int64(len(report.Counts)) + int64(len(report.Gauges)) + 1
+	report.Counts["num_measurements"] = int64(len(report.Counts)) + int64(len(report.Summaries)) + 1
 	for key, value := range report.Counts {
 		metricName, tags := parseMeasurementKey(key)
 		m := Measurement{
@@ -110,27 +111,27 @@ func (r *Reporter) flushReport(report *MeasurementSetReport) {
 		}
 		addMeasurement(m)
 	}
-	// TODO: refactor to use guage methods
-	for key, gauge := range report.Gauges {
+	// TODO: refactor to use summary methods
+	for key, summary := range report.Summaries {
 		metricName, tags := parseMeasurementKey(key)
 		m := Measurement{
 			Name: r.prefix + regexpIllegalNameChars.ReplaceAllString(metricName, "_"),
 			Tags: r.mergeGlobalTags(tags),
 		}
-		if gauge.Sum != 0 {
-			m.Sum = gauge.Sum
+		if summary.Sum != 0 {
+			m.Sum = summary.Sum
 		}
-		if gauge.Count != 0 {
-			m.Count = gauge.Count
+		if summary.Count != 0 {
+			m.Count = summary.Count
 		}
-		if gauge.Min != 0 {
-			m.Min = gauge.Min
+		if summary.Min != 0 {
+			m.Min = summary.Min
 		}
-		if gauge.Max != 0 {
-			m.Max = gauge.Max
+		if summary.Max != 0 {
+			m.Max = summary.Max
 		}
-		if gauge.Last != 0 {
-			m.Last = gauge.Last
+		if summary.Last != 0 {
+			m.Last = summary.Last
 		}
 		addMeasurement(m)
 	}
