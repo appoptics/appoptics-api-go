@@ -2,7 +2,7 @@ package appoptics
 
 import "sync"
 
-// A Gauge corresponds roughly to the Gauge feature in Librato, storing a count/sum/min/max/last.
+// A Gauge corresponds roughly to the "summary fields" measurement feature in AppOptics, storing a count/sum/min/max/last.
 // It can be either updated by passing sequential values to UpdateValue or by passing a Gauge
 // to Update, e.g. gauge.Update(Gauge{Sum:100,Count:10,Min:5,Max:15})
 type Gauge struct {
