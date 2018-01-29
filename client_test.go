@@ -32,7 +32,7 @@ func TestNewClient_Defaults(t *testing.T) {
 func TestNewClient_Customized(t *testing.T) {
 	token := "deadbeef"
 	altUserAgentString := "totally-different-thing"
-	altBaseURLString := "https://api.librato.com"
+	altBaseURLString := "https://metrics-api.appoptics.com"
 
 	t.Run("custom user agent string", func(t *testing.T) {
 		c := NewClient(token, SetUserAgent(altUserAgentString))

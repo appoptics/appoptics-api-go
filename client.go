@@ -76,7 +76,7 @@ type Client struct {
 	userAgentString string
 }
 
-// TODO: make this take an optional URL parameter so it can be used against Librato API
+// NewClient returns a new AppOptics API client. Optional arguments SetUserAgent and SetBaseURL can be provided.
 func NewClient(token string, opts ...func(*Client) error) *Client {
 	baseURL, _ := url.Parse(defaultBaseURL)
 	c := &Client{
