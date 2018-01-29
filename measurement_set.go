@@ -15,20 +15,20 @@ var (
 	ctxMarkerKey = &ctxMarker{}
 )
 
-// MeasurementSet represents a map of SynchronizedCounters and SynchronizedSummarys. All functions
+// MeasurementSet represents a map of SynchronizedCounters and SynchronizedAggregators. All functions
 // of MeasurementSet are safe for concurrent use.
 type MeasurementSet struct {
-	counters       map[string]*SynchronizedCounter
-	summaries      map[string]*SynchronizedSummary
-	countersMutex  sync.RWMutex
-	summariesMutex sync.RWMutex
+	counters         map[string]*SynchronizedCounter
+	aggregators      map[string]*SynchronizedAggregator
+	countersMutex    sync.RWMutex
+	aggregatorsMutex sync.RWMutex
 }
 
 // NewMeasurementSet returns a new empty MeasurementSet
 func NewMeasurementSet() *MeasurementSet {
 	return &MeasurementSet{
-		counters:  map[string]*SynchronizedCounter{},
-		summaries: map[string]*SynchronizedSummary{},
+		counters:    map[string]*SynchronizedCounter{},
+		aggregators: map[string]*SynchronizedAggregator{},
 	}
 }
 
@@ -50,22 +50,22 @@ func (s *MeasurementSet) GetCounter(key string) *SynchronizedCounter {
 	return counter
 }
 
-// GetSummary returns a SynchronizedSummary assigned to the specified key, creating a new one
+// GetAggregator returns a SynchronizedAggregator assigned to the specified key, creating a new one
 // if necessary.
-func (s *MeasurementSet) GetSummary(key string) *SynchronizedSummary {
-	s.summariesMutex.RLock()
-	summary, ok := s.summaries[key]
-	s.summariesMutex.RUnlock()
+func (s *MeasurementSet) GetAggregator(key string) *SynchronizedAggregator {
+	s.aggregatorsMutex.RLock()
+	agg, ok := s.aggregators[key]
+	s.aggregatorsMutex.RUnlock()
 	if !ok {
-		s.summariesMutex.Lock()
-		summary, ok = s.summaries[key]
+		s.aggregatorsMutex.Lock()
+		agg, ok = s.aggregators[key]
 		if !ok {
-			summary = &SynchronizedSummary{}
-			s.summaries[key] = summary
+			agg = &SynchronizedAggregator{}
+			s.aggregators[key] = agg
 		}
-		s.summariesMutex.Unlock()
+		s.aggregatorsMutex.Unlock()
 	}
-	return summary
+	return agg
 }
 
 // Incr is a convenience function to get the specified Counter and call Incr on it. See Counter.Incr.
@@ -84,32 +84,32 @@ func (s *MeasurementSet) AddInt(key string, delta int) {
 	s.GetCounter(key).AddInt(delta)
 }
 
-// UpdateSummaryValue is a convenience to get the specified Summary and call UpdateValue on it.
-// See Summary.UpdateValue.
-func (s *MeasurementSet) UpdateSummaryValue(key string, val int64) {
-	s.GetSummary(key).UpdateValue(val)
+// UpdateAggregatorValue is a convenience to get the specified Aggregator and call UpdateValue on it.
+// See Aggregator.UpdateValue.
+func (s *MeasurementSet) UpdateAggregatorValue(key string, val float64) {
+	s.GetAggregator(key).UpdateValue(val)
 }
 
-// UpdateSummary is a convenience to get the specified Summary and call Update on it. See Summary.Update.
-func (s *MeasurementSet) UpdateSummary(key string, other Summary) {
-	s.GetSummary(key).Update(other)
+// UpdateAggregator is a convenience to get the specified Aggregator and call Update on it. See Aggregator.Update.
+func (s *MeasurementSet) UpdateAggregator(key string, other Aggregator) {
+	s.GetAggregator(key).Update(other)
 }
 
-// Merge takes a MeasurementSetReport and merges all of it Counters and Summarys into this MeasurementSet.
-// This in turn calls Counter.Add for each Counter in the report, and Summary.Update for each Summary in
+// Merge takes a MeasurementSetReport and merges all of it Counters and Aggregators into this MeasurementSet.
+// This in turn calls Counter.Add for each Counter in the report, and Aggregator.Update for each Aggregator in
 // the report. Any keys that do not exist in this MeasurementSet will be created.
 func (s *MeasurementSet) Merge(report *MeasurementSetReport) {
 	for key, value := range report.Counts {
 		s.GetCounter(key).Add(value)
 	}
-	for key, summary := range report.Summaries {
-		s.GetSummary(key).Update(summary)
+	for key, agg := range report.Aggregators {
+		s.GetAggregator(key).Update(agg)
 	}
 }
 
 // Reset generates a MeasurementSetReport with a copy of the state of each of the non-zero Counters and
-// Summarys in this MeasurementSet. Counters with a value of 0 and Summarys with a count of 0 are omitted.
-// All Counters and Summarys are reset to the zero/nil state but are never removed from this
+// Aggregators in this MeasurementSet. Counters with a value of 0 and Aggregators with a count of 0 are omitted.
+// All Counters and Aggregators are reset to the zero/nil state but are never removed from this
 // MeasurementSet, so they can continue be used indefinitely.
 func (s *MeasurementSet) Reset() *MeasurementSetReport {
 	report := NewMeasurementSetReport()
@@ -121,19 +121,19 @@ func (s *MeasurementSet) Reset() *MeasurementSetReport {
 		}
 	}
 	s.countersMutex.Unlock()
-	s.summariesMutex.Lock()
-	for key, syncSummary := range s.summaries {
-		summary := syncSummary.Reset()
-		if summary.Count != 0 {
-			report.Summaries[key] = summary
+	s.aggregatorsMutex.Lock()
+	for key, syncAggregator := range s.aggregators {
+		agg := syncAggregator.Reset()
+		if agg.Count != 0 {
+			report.Aggregators[key] = agg
 		}
 	}
-	s.summariesMutex.Unlock()
+	s.aggregatorsMutex.Unlock()
 	return report
 }
 
 // ContextWithMeasurementSet wraps the specified context with a MeasurementSet.
-// XXX TODO: add convenience methods to read that MeasurementSet and manipulate Counters/Summarys on it.
+// XXX TODO: add convenience methods to read that MeasurementSet and manipulate Counters/Aggregators on it.
 func ContextWithMeasurementSet(ctx context.Context) context.Context {
 	return context.WithValue(ctx, ctxMarkerKey, NewMeasurementSet())
 }
