@@ -16,11 +16,14 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// Version number of this package.
 const (
 	MajorVersion = 0
-	MinorVersion = 1
-	PatchVersion = 0
+	MinorVersion = 2
+	PatchVersion = 2
+)
 
+const (
 	// MeasurementPostMaxBatchSize defines the max number of Measurements to send to the API at once
 	MeasurementPostMaxBatchSize = 1000
 	// DefaultPersistenceErrorLimit sets the number of errors that will be allowed before persistence shuts down
@@ -35,7 +38,8 @@ var (
 	Version = fmt.Sprintf("%d.%d.%d", MajorVersion, MinorVersion, PatchVersion)
 
 	regexpIllegalNameChars = regexp.MustCompile("[^A-Za-z0-9.:_-]") // from https://www.AppOptics.com/docs/api/#measurements
-	ErrBadStatus           = errors.New("Received non-OK status from AppOptics POST")
+	// ErrBadStatus is returned if the AppOptics API returns a non-200 error code.
+	ErrBadStatus = errors.New("Received non-OK status from AppOptics POST")
 )
 
 // ServiceAccessor defines an interface for talking to  via domain-specific service constructs
@@ -52,12 +56,12 @@ type ErrorResponse struct {
 	Errors interface{} `json:"errors"`
 }
 
-// TODO: add API reference URLs here
 // RequestErrorMessage represents the error schema for request errors
+// TODO: add API reference URLs here
 type RequestErrorMessage map[string][]string
 
-// TODO: add API reference URLs here
 // ParamErrorMessage represents the error schema for param errors
+// TODO: add API reference URLs here
 type ParamErrorMessage []map[string]string
 
 // Client implements ServiceAccessor
@@ -192,9 +196,8 @@ func (c *Client) Do(req *http.Request, respData interface{}) (*http.Response, er
 		if writer, ok := respData.(io.Writer); ok {
 			_, err := io.Copy(writer, resp.Body)
 			return resp, err
-		} else {
-			err = json.NewDecoder(resp.Body).Decode(respData)
 		}
+		err = json.NewDecoder(resp.Body).Decode(respData)
 	}
 
 	return resp, err
