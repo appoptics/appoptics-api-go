@@ -35,14 +35,14 @@ func TestNewClient_Customized(t *testing.T) {
 	altBaseURLString := "https://metrics-api.appoptics.com"
 
 	t.Run("custom user agent string", func(t *testing.T) {
-		c := NewClient(token, SetUserAgent(altUserAgentString))
+		c := NewClient(token, UserAgentClientOption(altUserAgentString))
 		if c.userAgentString != altUserAgentString {
 			t.Errorf("expected '%s' to match '%s'", c.userAgentString, altUserAgentString)
 		}
 	})
 
 	t.Run("custom base URL", func(t *testing.T) {
-		c := NewClient(token, SetBaseURL(altBaseURLString))
+		c := NewClient(token, BaseURLClientOption(altBaseURLString))
 		testAltBaseURL, _ := url.Parse(altBaseURLString)
 		if *c.baseURL != *testAltBaseURL {
 			t.Errorf("expected '%s' to match '%s'", *c.baseURL, *testAltBaseURL)

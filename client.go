@@ -76,7 +76,10 @@ type Client struct {
 	userAgentString string
 }
 
-// NewClient returns a new AppOptics API client. Optional arguments SetUserAgent and SetBaseURL can be provided.
+// ClientOption provides functional option-setting behavior
+type ClientOption func(*Client) error
+
+// NewClient returns a new AppOptics API client. Optional arguments UserAgentClientOption and BaseURLClientOption can be provided.
 func NewClient(token string, opts ...func(*Client) error) *Client {
 	baseURL, _ := url.Parse(defaultBaseURL)
 	c := &Client{
@@ -133,16 +136,16 @@ func (c *Client) NewRequest(method, path string, body interface{}) (*http.Reques
 	return req, nil
 }
 
-// SetUserAgent is a config function allowing setting of the User-Agent header in requests
-func SetUserAgent(userAgentString string) func(*Client) error {
+// UserAgentClientOption is a config function allowing setting of the User-Agent header in requests
+func UserAgentClientOption(userAgentString string) ClientOption {
 	return func(c *Client) error {
 		c.userAgentString = userAgentString
 		return nil
 	}
 }
 
-// SetBaseURL is a config function allowing setting of the base URL the API is on
-func SetBaseURL(urlString string) func(*Client) error {
+// BaseURLClientOption is a config function allowing setting of the base URL the API is on
+func BaseURLClientOption(urlString string) ClientOption {
 	return func(c *Client) error {
 		var altURL *url.URL
 		var err error
