@@ -14,7 +14,10 @@ doc:
 	godoc -http=:8080 -index
 
 test:
-	go test -v --trace $(excluding_vendor)
+	go test -v $(excluding_vendor)
 
 vet:
-	go vet $(excluding_vendor)
+	go vet
+
+release:
+	git tag -a $(shell go run cmd/main.go)

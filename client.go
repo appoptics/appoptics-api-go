@@ -18,8 +18,8 @@ import (
 
 const (
 	MajorVersion = 0
-	MinorVersion = 1
-	PatchVersion = 0
+	MinorVersion = 2
+	PatchVersion = 2
 
 	// MeasurementPostMaxBatchSize defines the max number of Measurements to send to the API at once
 	MeasurementPostMaxBatchSize = 1000
@@ -27,16 +27,19 @@ const (
 	DefaultPersistenceErrorLimit = 5
 	defaultBaseURL               = "https://api.appoptics.com/v1/"
 	defaultMediaType             = "application/json"
-	defaultUserAgentString       = "appoptics-api-go"
+	clientIdentifier             = "appoptics-api-go"
 )
 
 var (
 	// Version is the current version of this httpClient
-	Version = fmt.Sprintf("%d.%d.%d", MajorVersion, MinorVersion, PatchVersion)
 
 	regexpIllegalNameChars = regexp.MustCompile("[^A-Za-z0-9.:_-]") // from https://www.AppOptics.com/docs/api/#measurements
 	ErrBadStatus           = errors.New("Received non-OK status from AppOptics POST")
 )
+
+func Version() string {
+	return fmt.Sprintf("%d.%d.%d", MajorVersion, MinorVersion, PatchVersion)
+}
 
 // ServiceAccessor defines an interface for talking to  via domain-specific service constructs
 type ServiceAccessor interface {
@@ -72,8 +75,8 @@ type Client struct {
 	measurementsService MeasurementsCommunicator
 	// spacesService embeds the httpClient and implements access to the Spaces API
 	spacesService SpacesCommunicator
-	// userAgentString is placed in the User-Agent header
-	userAgentString string
+	// callerUserAgentFragment is placed in the User-Agent header
+	callerUserAgentFragment string
 }
 
 // ClientOption provides functional option-setting behavior
@@ -83,9 +86,8 @@ type ClientOption func(*Client) error
 func NewClient(token string, opts ...func(*Client) error) *Client {
 	baseURL, _ := url.Parse(defaultBaseURL)
 	c := &Client{
-		token:           token,
-		baseURL:         baseURL,
-		userAgentString: defaultUserAgentString,
+		token:   token,
+		baseURL: baseURL,
 		httpClient: &http.Client{
 			Timeout: 30 * time.Second,
 			Transport: &http.Transport{
@@ -131,7 +133,7 @@ func (c *Client) NewRequest(method, path string, body interface{}) (*http.Reques
 	req.SetBasicAuth("token", c.token)
 	req.Header.Set("Accept", defaultMediaType)
 	req.Header.Set("Content-Type", defaultMediaType)
-	req.Header.Set("User-Agent", c.userAgentString)
+	req.Header.Set("User-Agent", c.callerUserAgentFragment)
 
 	return req, nil
 }
@@ -139,7 +141,7 @@ func (c *Client) NewRequest(method, path string, body interface{}) (*http.Reques
 // UserAgentClientOption is a config function allowing setting of the User-Agent header in requests
 func UserAgentClientOption(userAgentString string) ClientOption {
 	return func(c *Client) error {
-		c.userAgentString = userAgentString
+		c.callerUserAgentFragment = userAgentString
 		return nil
 	}
 }
@@ -198,6 +200,20 @@ func (c *Client) Do(req *http.Request, respData interface{}) (*http.Response, er
 	}
 
 	return resp, err
+}
+
+// completeUserAgentString returns the string that will be placed in the User-Agent header.
+// It ensures that any caller-set string has the client name and version appended to it.
+func (c *Client) completeUserAgentString() string {
+	if c.callerUserAgentFragment == "" {
+		return clientVersionString()
+	}
+	return fmt.Sprintf("%s:%s", c.callerUserAgentFragment, clientVersionString())
+}
+
+// clientVersionString returns the canonical name-and-version string
+func clientVersionString() string {
+	return fmt.Sprintf("%s-v%s", clientIdentifier, Version())
 }
 
 // checkError creates an ErrorResponse from the http.Response.Body
