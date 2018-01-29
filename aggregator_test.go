@@ -3,7 +3,7 @@ package appoptics
 import "testing"
 
 func TestUpdateValue(t *testing.T) {
-	s := &Summary{
+	s := &Aggregator{
 		Count: 3,
 		Sum:   8,
 		Min:   3,
@@ -58,7 +58,7 @@ func TestUpdateValue(t *testing.T) {
 }
 
 func TestUpdateWithZeroValues(t *testing.T) {
-	newSummary := Summary{
+	newAgg := Aggregator{
 		Count: 2,
 		Sum:   3,
 		Min:   1,
@@ -66,34 +66,34 @@ func TestUpdateWithZeroValues(t *testing.T) {
 		Last:  2,
 	}
 
-	emptySummary := &Summary{}
+	emptyAgg := &Aggregator{}
 
-	emptySummary.Update(newSummary)
+	emptyAgg.Update(newAgg)
 
-	if emptySummary.Count != newSummary.Count {
-		t.Errorf("expected Count to match but %d != %d", emptySummary.Count, newSummary.Count)
+	if emptyAgg.Count != newAgg.Count {
+		t.Errorf("expected Count to match but %d != %d", emptyAgg.Count, newAgg.Count)
 	}
 
-	if emptySummary.Sum != newSummary.Sum {
-		t.Errorf("expected Sum to match but %d != %d", emptySummary.Sum, newSummary.Sum)
+	if emptyAgg.Sum != newAgg.Sum {
+		t.Errorf("expected Sum to match but %d != %d", emptyAgg.Sum, newAgg.Sum)
 	}
 
-	if emptySummary.Min != newSummary.Min {
-		t.Errorf("expected Min to match but %d != %d", emptySummary.Min, newSummary.Min)
+	if emptyAgg.Min != newAgg.Min {
+		t.Errorf("expected Min to match but %d != %d", emptyAgg.Min, newAgg.Min)
 	}
 
-	if emptySummary.Max != newSummary.Max {
-		t.Errorf("expected Max to match but %d != %d", emptySummary.Max, newSummary.Max)
+	if emptyAgg.Max != newAgg.Max {
+		t.Errorf("expected Max to match but %d != %d", emptyAgg.Max, newAgg.Max)
 	}
 
-	if emptySummary.Last != newSummary.Last {
-		t.Errorf("expected Last to match but %d != %d", emptySummary.Last, newSummary.Last)
+	if emptyAgg.Last != newAgg.Last {
+		t.Errorf("expected Last to match but %d != %d", emptyAgg.Last, newAgg.Last)
 	}
 
 }
 
 func TestUpdateAggregation(t *testing.T) {
-	oldSummary := Summary{
+	oldAgg := Aggregator{
 		Count: 2,
 		Sum:   3,
 		Min:   1,
@@ -101,7 +101,7 @@ func TestUpdateAggregation(t *testing.T) {
 		Last:  2,
 	}
 
-	newSummary := Summary{
+	newAgg := Aggregator{
 		Count: 2,
 		Sum:   5,
 		Min:   2,
@@ -109,19 +109,19 @@ func TestUpdateAggregation(t *testing.T) {
 		Last:  3,
 	}
 
-	oldSummary.Update(newSummary)
+	oldAgg.Update(newAgg)
 
-	if oldSummary.Count != 4 {
-		t.Errorf("expected Count to be aggregate but was %d", oldSummary.Count)
+	if oldAgg.Count != 4 {
+		t.Errorf("expected Count to be aggregate but was %d", oldAgg.Count)
 	}
 
-	if oldSummary.Sum != 8 {
-		t.Errorf("expected Sum to be aggregate but was %d", oldSummary.Sum)
+	if oldAgg.Sum != 8 {
+		t.Errorf("expected Sum to be aggregate but was %d", oldAgg.Sum)
 	}
 }
 
 func TestUpdateWithNewMin(t *testing.T) {
-	oldSummary := Summary{
+	oldAgg := Aggregator{
 		Count: 2,
 		Sum:   6,
 		Min:   2,
@@ -129,7 +129,7 @@ func TestUpdateWithNewMin(t *testing.T) {
 		Last:  2,
 	}
 
-	newSummary := Summary{
+	newAgg := Aggregator{
 		Count: 2,
 		Sum:   4,
 		Min:   1,
@@ -137,16 +137,16 @@ func TestUpdateWithNewMin(t *testing.T) {
 		Last:  3,
 	}
 
-	oldSummary.Update(newSummary)
+	oldAgg.Update(newAgg)
 
-	if oldSummary.Min != newSummary.Min {
-		t.Errorf("expected Min to be reset to %d but was %d", newSummary.Min, oldSummary.Min)
+	if oldAgg.Min != newAgg.Min {
+		t.Errorf("expected Min to be reset to %d but was %d", newAgg.Min, oldAgg.Min)
 	}
 
 }
 
 func TestUpdateWithNewMax(t *testing.T) {
-	oldSummary := Summary{
+	oldAgg := Aggregator{
 		Count: 2,
 		Sum:   3,
 		Min:   1,
@@ -154,7 +154,7 @@ func TestUpdateWithNewMax(t *testing.T) {
 		Last:  2,
 	}
 
-	newSummary := Summary{
+	newAgg := Aggregator{
 		Count: 2,
 		Sum:   4,
 		Min:   1,
@@ -162,9 +162,9 @@ func TestUpdateWithNewMax(t *testing.T) {
 		Last:  3,
 	}
 
-	oldSummary.Update(newSummary)
+	oldAgg.Update(newAgg)
 
-	if oldSummary.Max != newSummary.Max {
-		t.Errorf("expected Max to be reset to %d but was %d", newSummary.Max, oldSummary.Max)
+	if oldAgg.Max != newAgg.Max {
+		t.Errorf("expected Max to be reset to %d but was %d", newAgg.Max, oldAgg.Max)
 	}
 }
