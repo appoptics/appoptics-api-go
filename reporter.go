@@ -15,7 +15,7 @@ const (
 	maxMeasurementsPerBatch           = 1000
 )
 
-// Reporter provides a way to persist data from a set collection of Summarys and Counters at a regular interval
+// Reporter provides a way to persist data from a set collection of Aggregators and Counters at a regular interval
 type Reporter struct {
 	measurementSet      *MeasurementSet
 	measurementsService *MeasurementsService
@@ -99,7 +99,7 @@ func (r *Reporter) flushReport(report *MeasurementSetReport) {
 		}
 	}
 	resetBatch()
-	report.Counts["num_measurements"] = int64(len(report.Counts)) + int64(len(report.Summaries)) + 1
+	report.Counts["num_measurements"] = int64(len(report.Counts)) + int64(len(report.Aggregators)) + 1
 	for key, value := range report.Counts {
 		metricName, tags := parseMeasurementKey(key)
 		m := Measurement{
@@ -111,27 +111,27 @@ func (r *Reporter) flushReport(report *MeasurementSetReport) {
 		}
 		addMeasurement(m)
 	}
-	// TODO: refactor to use summary methods
-	for key, summary := range report.Summaries {
+	// TODO: refactor to use Aggregator methods
+	for key, agg := range report.Aggregators {
 		metricName, tags := parseMeasurementKey(key)
 		m := Measurement{
 			Name: r.prefix + regexpIllegalNameChars.ReplaceAllString(metricName, "_"),
 			Tags: r.mergeGlobalTags(tags),
 		}
-		if summary.Sum != 0 {
-			m.Sum = summary.Sum
+		if agg.Sum != 0 {
+			m.Sum = agg.Sum
 		}
-		if summary.Count != 0 {
-			m.Count = summary.Count
+		if agg.Count != 0 {
+			m.Count = agg.Count
 		}
-		if summary.Min != 0 {
-			m.Min = summary.Min
+		if agg.Min != 0 {
+			m.Min = agg.Min
 		}
-		if summary.Max != 0 {
-			m.Max = summary.Max
+		if agg.Max != 0 {
+			m.Max = agg.Max
 		}
-		if summary.Last != 0 {
-			m.Last = summary.Last
+		if agg.Last != 0 {
+			m.Last = agg.Last
 		}
 		addMeasurement(m)
 	}
