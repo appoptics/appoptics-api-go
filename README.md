@@ -1,7 +1,7 @@
 # appoptics-api-go
 The official Go client for the [AppOptics metrics API](https://docs.appoptics.com/kb/custom_metrics/api/).
 
-[![Documentation](https://godoc.org/github.com/appoptics/appoptics-api-go?status.svg)]
+[![Documentation](https://godoc.org/github.com/appoptics/appoptics-api-go?status.svg)](https://godoc.org/github.com/appoptics/appoptics-api-go)
 
 ## See Also
 AppOptics also provides a [Go APM instrumentation](github.com/appoptics/appoptics-apm-go) library for distributed tracing.
