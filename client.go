@@ -19,7 +19,7 @@ import (
 const (
 	MajorVersion = 0
 	MinorVersion = 2
-	PatchVersion = 2
+	PatchVersion = 3
 
 	// MeasurementPostMaxBatchSize defines the max number of Measurements to send to the API at once
 	MeasurementPostMaxBatchSize = 1000
