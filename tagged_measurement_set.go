@@ -45,7 +45,7 @@ func (s *TaggedMeasurementSet) AddInt(key string, delta int) {
 
 // UpdateAggregatorValue is a convenience to get the specified Aggregator and call UpdateValue on it.
 // See Aggregator.UpdateValue.
-func (s *TaggedMeasurementSet) UpdateAggregatorValue(key string, val int64) {
+func (s *TaggedMeasurementSet) UpdateAggregatorValue(key string, val float64) {
 	s.GetAggregator(key).UpdateValue(val)
 }
 

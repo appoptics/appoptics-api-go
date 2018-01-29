@@ -8,15 +8,15 @@ import "sync"
 // to Update, e.g. s.Update(Aggregator{Sum:100,Count:10,Min:5,Max:15})
 type Aggregator struct {
 	Count int64
-	Sum   int64
-	Min   int64
-	Max   int64
-	Last  int64
+	Sum   float64
+	Min   float64
+	Max   float64
+	Last  float64
 }
 
 // UpdateValue sets the most recently observed value for this Aggregator, updating sum/count/min/max/last
 // accordingly.
-func (g *Aggregator) UpdateValue(val int64) {
+func (g *Aggregator) UpdateValue(val float64) {
 	if g.Count == 0 {
 		g.Min = val
 		g.Max = val
@@ -65,7 +65,7 @@ type SynchronizedAggregator struct {
 }
 
 // UpdateValue is a concurrent-safe wrapper around Aggregator.UpdateValue
-func (g *SynchronizedAggregator) UpdateValue(val int64) {
+func (g *SynchronizedAggregator) UpdateValue(val float64) {
 	g.m.Lock()
 	defer g.m.Unlock()
 	g.Aggregator.UpdateValue(val)

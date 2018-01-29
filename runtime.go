@@ -26,17 +26,17 @@ func recordRuntimeMetrics(m *MeasurementSet) {
 
 		now := time.Now()
 
-		m.UpdateAggregatorValue("go.goroutines", int64(runtime.NumGoroutine()))
-		m.UpdateAggregatorValue("go.memory.allocated", int64(memStats.Alloc))
-		m.UpdateAggregatorValue("go.memory.mallocs", int64(memStats.Mallocs))
-		m.UpdateAggregatorValue("go.memory.frees", int64(memStats.Frees))
-		m.UpdateAggregatorValue("go.memory.gc.total_pause", int64(memStats.PauseTotalNs))
-		m.UpdateAggregatorValue("go.memory.gc.heap", int64(memStats.HeapAlloc))
-		m.UpdateAggregatorValue("go..memory.gc.stack", int64(memStats.StackInuse))
+		m.UpdateAggregatorValue("go.goroutines", float64(runtime.NumGoroutine()))
+		m.UpdateAggregatorValue("go.memory.allocated", float64(memStats.Alloc))
+		m.UpdateAggregatorValue("go.memory.mallocs", float64(memStats.Mallocs))
+		m.UpdateAggregatorValue("go.memory.frees", float64(memStats.Frees))
+		m.UpdateAggregatorValue("go.memory.gc.total_pause", float64(memStats.PauseTotalNs))
+		m.UpdateAggregatorValue("go.memory.gc.heap", float64(memStats.HeapAlloc))
+		m.UpdateAggregatorValue("go..memory.gc.stack", float64(memStats.StackInuse))
 
 		if lastPauseNs > 0 {
 			pauseSinceLastSample := memStats.PauseTotalNs - lastPauseNs
-			m.UpdateAggregatorValue("go.memory.gc.pause_per_second", int64(float64(pauseSinceLastSample)/runtimeRecordInterval.Seconds()))
+			m.UpdateAggregatorValue("go.memory.gc.pause_per_second", float64(pauseSinceLastSample)/runtimeRecordInterval.Seconds())
 		}
 		lastPauseNs = memStats.PauseTotalNs
 
@@ -44,7 +44,7 @@ func recordRuntimeMetrics(m *MeasurementSet) {
 		if lastNumGC > 0 {
 			diff := float64(countGC)
 			diffTime := now.Sub(lastSampleTime).Seconds()
-			m.UpdateAggregatorValue("go.memory.gc.gc_per_second", int64(diff/diffTime))
+			m.UpdateAggregatorValue("go.memory.gc.gc_per_second", diff/diffTime)
 		}
 
 		if countGC > 0 {
@@ -55,7 +55,7 @@ func recordRuntimeMetrics(m *MeasurementSet) {
 			for i := 0; i < countGC; i++ {
 				idx := int((memStats.NumGC-uint32(i))+255) % 256
 				pause := time.Duration(memStats.PauseNs[idx])
-				m.UpdateAggregatorValue("go.memory.gc.pause", int64(pause))
+				m.UpdateAggregatorValue("go.memory.gc.pause", float64(pause))
 			}
 		}
 
