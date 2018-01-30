@@ -1,6 +1,7 @@
 package appoptics
 
 import (
+	"fmt"
 	"net/url"
 	"testing"
 )
@@ -22,9 +23,9 @@ func TestNewClient_Defaults(t *testing.T) {
 		}
 	})
 
-	t.Run("userAgentString should be set to default", func(t *testing.T) {
-		if c.userAgentString != defaultUserAgentString {
-			t.Errorf("expected '%s' to match '%s'", c.userAgentString, defaultUserAgentString)
+	t.Run("callerUserAgentFragment should be set to default", func(t *testing.T) {
+		if c.completeUserAgentString() != clientVersionString() {
+			t.Errorf("expected '%s' to match '%s'", c.completeUserAgentString(), clientVersionString())
 		}
 	})
 }
@@ -36,8 +37,9 @@ func TestNewClient_Customized(t *testing.T) {
 
 	t.Run("custom user agent string", func(t *testing.T) {
 		c := NewClient(token, UserAgentClientOption(altUserAgentString))
-		if c.userAgentString != altUserAgentString {
-			t.Errorf("expected '%s' to match '%s'", c.userAgentString, altUserAgentString)
+		chkString := fmt.Sprintf("%s:%s", altUserAgentString, clientVersionString())
+		if c.completeUserAgentString() != chkString {
+			t.Errorf("expected '%s' to match '%s'", c.completeUserAgentString(), chkString)
 		}
 	})
 
