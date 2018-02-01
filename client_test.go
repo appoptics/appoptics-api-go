@@ -38,8 +38,9 @@ func TestNewClient_Customized(t *testing.T) {
 	t.Run("custom user agent string", func(t *testing.T) {
 		c := NewClient(token, UserAgentClientOption(altUserAgentString))
 		chkString := fmt.Sprintf("%s:%s", altUserAgentString, clientVersionString())
-		if c.completeUserAgentString() != chkString {
-			t.Errorf("expected '%s' to match '%s'", c.completeUserAgentString(), chkString)
+		req, _ := c.NewRequest("GET", "foo", nil)
+		if req.UserAgent() != chkString {
+			t.Errorf("expected '%s' to match '%s'", req.UserAgent(), chkString)
 		}
 	})
 

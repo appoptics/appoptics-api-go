@@ -137,7 +137,7 @@ func (c *Client) NewRequest(method, path string, body interface{}) (*http.Reques
 	req.SetBasicAuth("token", c.token)
 	req.Header.Set("Accept", defaultMediaType)
 	req.Header.Set("Content-Type", defaultMediaType)
-	req.Header.Set("User-Agent", c.callerUserAgentFragment)
+	req.Header.Set("User-Agent", c.completeUserAgentString())
 
 	return req, nil
 }
