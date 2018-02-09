@@ -9,4 +9,7 @@ The official Go client for the [AppOptics metrics API](https://docs.appoptics.co
 AppOptics also provides a [Go APM instrumentation](github.com/appoptics/appoptics-apm-go) library for distributed tracing.
 
 # Questions/Comments?
-Please [open an issue](https://github.com/appoptics/appoptics-api-go/issues/new), we'd love to hear from you. As a SolarWinds Innovation Project, this project is supported in a best-effort fashion.
+Please [open an issue](https://github.com/appoptics/appoptics-api-go/issues/new), we'd love to hear from you.
+
+### Acknowledgements
+This library's client design was partially inspired by the [Librato Go client](https://github.com/henrikhodne/go-librato) from @henrickhodne.
