@@ -117,6 +117,7 @@ func (r *Reporter) flushReport(report *MeasurementSetReport) {
 		m := Measurement{
 			Name: r.prefix + regexpIllegalNameChars.ReplaceAllString(metricName, "_"),
 			Tags: r.mergeGlobalTags(tags),
+			Time: time.Now().UTC().Unix(),
 		}
 		if agg.Sum != 0 {
 			m.Sum = agg.Sum
