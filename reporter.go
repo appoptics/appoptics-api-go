@@ -77,7 +77,7 @@ func (r *Reporter) postMeasurementBatches() {
 }
 
 func (r *Reporter) flushReport(report *MeasurementSetReport) {
-	batchTimeUnixSecs := (time.Now().Unix() / outputMeasurementsIntervalSeconds) * outputMeasurementsIntervalSeconds
+	batchTimeUnixSecs := (time.Now().UTC().Unix() / outputMeasurementsIntervalSeconds) * outputMeasurementsIntervalSeconds
 
 	var batch *MeasurementsBatch
 	resetBatch := func() {
