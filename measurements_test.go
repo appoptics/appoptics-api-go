@@ -80,6 +80,10 @@ func TestMeasurementsServiceCreate(t *testing.T) {
 	assert.Equal(t, map[string]interface{}{"a": "b"}, m0["tags"])
 	assert.EqualValues(t, 5, m0["value"])
 	assert.NotContains(t, m0, "time")
+	assert.NotContains(t, m0, "sum")
+	assert.NotContains(t, m0, "count")
+	assert.NotContains(t, m0, "min")
+	assert.NotContains(t, m0, "max")
 
 	m1, ok := mts[1].(map[string]interface{})
 	assert.Equal(t, "metric2", m1["name"])
@@ -87,10 +91,15 @@ func TestMeasurementsServiceCreate(t *testing.T) {
 	assert.EqualValues(t, 10, m1["sum"])
 	assert.EqualValues(t, 2, m1["count"])
 	assert.NotContains(t, m1, "time")
+	assert.NotContains(t, m1, "value")
 
 	m2, ok := mts[2].(map[string]interface{})
 	assert.Equal(t, "metric3", m2["name"])
 	assert.Equal(t, map[string]interface{}{"x": "y"}, m2["tags"])
 	assert.EqualValues(t, 4, m2["value"])
 	assert.EqualValues(t, ts1, m2["time"])
+	assert.NotContains(t, m2, "sum")
+	assert.NotContains(t, m2, "count")
+	assert.NotContains(t, m2, "min")
+	assert.NotContains(t, m2, "max")
 }
