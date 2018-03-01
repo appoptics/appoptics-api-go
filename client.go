@@ -72,7 +72,7 @@ type Client struct {
 	// baseURL is the base endpoint of the remote  service
 	baseURL *url.URL
 	// httpClient is the http.Client singleton used for wire interaction
-	httpClient *http.Client
+	httpClient httpClient
 	// token is the private part of the API credential pair
 	token string
 	// measurementsService embeds the httpClient and implements access to the Measurements API
@@ -81,6 +81,11 @@ type Client struct {
 	spacesService SpacesCommunicator
 	// callerUserAgentFragment is placed in the User-Agent header
 	callerUserAgentFragment string
+}
+
+// httpClient defines the http.Client method used by Client.
+type httpClient interface {
+	Do(req *http.Request) (*http.Response, error)
 }
 
 // ClientOption provides functional option-setting behavior
