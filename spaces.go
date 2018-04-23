@@ -27,7 +27,7 @@ type Space struct {
 // SpacesCommunicator defines the interface for the Spaces API
 type SpacesCommunicator interface {
 	Create(string) (*Space, error)
-	List() ([]*Space, error)
+	List(*RequestParameters) ([]*Space, error)
 	Retrieve(int)(*RetrieveSpaceResponse, error)
 	Update(int, string)(*Space, error)
 	Delete(int) error
@@ -59,13 +59,16 @@ func (s *SpacesService ) Create(name string) (*Space, error) {
 
 
 // List implements the  Spaces API's List command
-func (s *SpacesService) List() ([]*Space, error) {
+func (s *SpacesService) List(rp *RequestParameters) ([]*Space, error) {
 	var spaces []*Space
 	req, err := s.client.NewRequest("GET", "spaces", nil)
 
+
 	if err != nil {
-		return spaces,  err
+		return spaces, err
 	}
+
+	rp.AddToRequest(req)
 
 	var spacesResponse ListSpacesResponse
 	_, err = s.client.Do(req, &spacesResponse)

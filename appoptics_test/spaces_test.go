@@ -29,7 +29,7 @@ func TestSpacesService_Retrieve(t *testing.T) {
 }
 
 func TestSpacesService_List(t *testing.T) {
-	spaces, err := client.SpacesService().List()
+	spaces, err := client.SpacesService().List(nil)
 
 	if err != nil {
 		t.Errorf("error running List: %v", err)
