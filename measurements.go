@@ -37,6 +37,10 @@ type MeasurementsService struct {
 	client *Client
 }
 
+func NewMeasurementsService(c *Client) *MeasurementsService {
+	return &MeasurementsService{c}
+}
+
 // NewMeasurement returns a Measurement with the given name and an empty attributes map
 func NewMeasurement(name string) Measurement {
 	attrs := make(map[string]interface{})

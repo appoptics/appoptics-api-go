@@ -105,8 +105,9 @@ func NewClient(token string, opts ...func(*Client) error) *Client {
 			},
 		},
 	}
-	c.measurementsService = &MeasurementsService{c}
-	c.spacesService = &SpacesService{c}
+
+	c.measurementsService = NewMeasurementsService(c)
+	c.spacesService = NewSpacesService(c)
 
 	for _, opt := range opts {
 		opt(c)

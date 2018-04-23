@@ -28,13 +28,17 @@ type Space struct {
 type SpacesCommunicator interface {
 	Create(string) (*Space, error)
 	List() ([]*Space, error)
-	Retrieve(int)(*Space, error)
+	Retrieve(int)(*RetrieveSpaceResponse, error)
 	Update(int, string)(*Space, error)
 	Delete(int) error
 }
 
 type SpacesService struct {
 	client *Client
+}
+
+func NewSpacesService(c *Client) *SpacesService  {
+	return &SpacesService{c}
 }
 
 // Create creates the space with the given name
@@ -75,8 +79,8 @@ func (s *SpacesService) List() ([]*Space, error) {
 }
 
 // Retrieve implements the Spaces API's Retrieve command
-func (s *SpacesService ) Retrieve(id int) (*Space, error)  {
-	retrievedSpace := &Space{}
+func (s *SpacesService ) Retrieve(id int) (*RetrieveSpaceResponse, error)  {
+	retrievedSpace := &RetrieveSpaceResponse{}
 	spacePath := fmt.Sprintf("spaces/%d", id)
 	req, err := s.client.NewRequest("GET", spacePath, nil)
 
