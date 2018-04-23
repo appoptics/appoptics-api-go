@@ -11,7 +11,7 @@ type ListSpacesResponse struct {
 }
 
 // RetrieveSpaceResponse represents the returned data payload from Spaces API's Retrieve command (/spaces/:id)
-type RetrieveSpaceResponse struct{
+type RetrieveSpaceResponse struct {
 	Space
 	Charts []map[string]int `json:"charts","omitempty"`
 }
@@ -28,8 +28,8 @@ type Space struct {
 type SpacesCommunicator interface {
 	Create(string) (*Space, error)
 	List(*RequestParameters) ([]*Space, error)
-	Retrieve(int)(*RetrieveSpaceResponse, error)
-	Update(int, string)(*Space, error)
+	Retrieve(int) (*RetrieveSpaceResponse, error)
+	Update(int, string) (*Space, error)
 	Delete(int) error
 }
 
@@ -37,38 +37,38 @@ type SpacesService struct {
 	client *Client
 }
 
-func NewSpacesService(c *Client) *SpacesService  {
+func NewSpacesService(c *Client) *SpacesService {
 	return &SpacesService{c}
 }
 
 // Create creates the space with the given name
-func (s *SpacesService ) Create(name string) (*Space, error) {
-	requestedSpace := &Space{ Name: name }
+func (s *SpacesService) Create(name string) (*Space, error) {
+	requestedSpace := &Space{Name: name}
 	createdSpace := &Space{}
 	req, err := s.client.NewRequest("POST", "spaces", requestedSpace)
 	if err != nil {
-	    return nil, err
+		return nil, err
 	}
 
 	_, err = s.client.Do(req, createdSpace)
 	if err != nil {
-	    return nil, err
+		return nil, err
 	}
 	return createdSpace, nil
 }
-
 
 // List implements the  Spaces API's List command
 func (s *SpacesService) List(rp *RequestParameters) ([]*Space, error) {
 	var spaces []*Space
 	req, err := s.client.NewRequest("GET", "spaces", nil)
 
-
 	if err != nil {
 		return spaces, err
 	}
 
-	rp.AddToRequest(req)
+	if rp != nil {
+		rp.AddToRequest(req)
+	}
 
 	var spacesResponse ListSpacesResponse
 	_, err = s.client.Do(req, &spacesResponse)
@@ -82,27 +82,27 @@ func (s *SpacesService) List(rp *RequestParameters) ([]*Space, error) {
 }
 
 // Retrieve implements the Spaces API's Retrieve command
-func (s *SpacesService ) Retrieve(id int) (*RetrieveSpaceResponse, error)  {
+func (s *SpacesService) Retrieve(id int) (*RetrieveSpaceResponse, error) {
 	retrievedSpace := &RetrieveSpaceResponse{}
 	spacePath := fmt.Sprintf("spaces/%d", id)
 	req, err := s.client.NewRequest("GET", spacePath, nil)
 
 	if err != nil {
-	    return nil, err
+		return nil, err
 	}
 
 	_, err = s.client.Do(req, retrievedSpace)
 
 	if err != nil {
-	    return nil, err
+		return nil, err
 	}
 
 	return retrievedSpace, nil
 }
 
 // Update implements the Spaces API's Update command
-func (s *SpacesService ) Update(id int, name string) (*Space, error) {
-	requestedSpace := &Space{ Name: name }
+func (s *SpacesService) Update(id int, name string) (*Space, error) {
+	requestedSpace := &Space{Name: name}
 	updatedSpace := &Space{}
 	spacePath := fmt.Sprintf("spaces/%d", id)
 	req, err := s.client.NewRequest("PUT", spacePath, requestedSpace)
@@ -121,7 +121,7 @@ func (s *SpacesService ) Update(id int, name string) (*Space, error) {
 }
 
 // Delete implements the Spaces API's Delete command
-func (s *SpacesService ) Delete(id int) error {
+func (s *SpacesService) Delete(id int) error {
 	spacePath := fmt.Sprintf("spaces/%d", id)
 	req, err := s.client.NewRequest("DELETE", spacePath, nil)
 

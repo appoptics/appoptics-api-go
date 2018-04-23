@@ -7,7 +7,7 @@ import (
 	"fmt"
 )
 
-func TestRequestParameters_AddToRequest(t *testing.T) {
+func TestRequestParameters_AddToRequest_WithParams(t *testing.T) {
 	baseUrl := "http://example.com"
 	orderby := "name"
 	sort := "desc"
