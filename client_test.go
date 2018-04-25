@@ -19,7 +19,7 @@ func TestNewClient_Defaults(t *testing.T) {
 	t.Run("baseURL should be set to default", func(t *testing.T) {
 		clientURL, _ := url.Parse(defaultBaseURL)
 		if *c.baseURL != *clientURL {
-			t.Errorf("expected '%s' to match '%s'", *c.baseURL, *clientURL)
+			t.Errorf("expected '%v' to match '%v'", *c.baseURL, *clientURL)
 		}
 	})
 
@@ -48,7 +48,7 @@ func TestNewClient_Customized(t *testing.T) {
 		c := NewClient(token, BaseURLClientOption(altBaseURLString))
 		testAltBaseURL, _ := url.Parse(altBaseURLString)
 		if *c.baseURL != *testAltBaseURL {
-			t.Errorf("expected '%s' to match '%s'", *c.baseURL, *testAltBaseURL)
+			t.Errorf("expected '%v' to match '%v'", *c.baseURL, *testAltBaseURL)
 		}
 	})
 }

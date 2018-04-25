@@ -105,8 +105,9 @@ func NewClient(token string, opts ...func(*Client) error) *Client {
 			},
 		},
 	}
-	c.measurementsService = &MeasurementsService{c}
-	c.spacesService = &SpacesService{c}
+
+	c.measurementsService = NewMeasurementsService(c)
+	c.spacesService = NewSpacesService(c)
 
 	for _, opt := range opts {
 		opt(c)
@@ -227,7 +228,7 @@ func clientVersionString() string {
 // checkError creates an ErrorResponse from the http.Response.Body
 func checkError(resp *http.Response) error {
 	var errResponse ErrorResponse
-	if resp.StatusCode >= 299 {
+	if resp.StatusCode >= 400 {
 		dec := json.NewDecoder(resp.Body)
 		dec.Decode(&errResponse)
 		log.Printf("error: %+v\n", errResponse)
@@ -245,3 +246,5 @@ func dumpResponse(resp *http.Response) {
 		fmt.Printf("response body: %s\n\n", string(buf.Bytes()))
 	}
 }
+
+
