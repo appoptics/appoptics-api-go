@@ -32,7 +32,7 @@ func recordRuntimeMetrics(m *MeasurementSet) {
 		m.UpdateAggregatorValue("go.memory.frees", float64(memStats.Frees))
 		m.UpdateAggregatorValue("go.memory.gc.total_pause", float64(memStats.PauseTotalNs))
 		m.UpdateAggregatorValue("go.memory.gc.heap", float64(memStats.HeapAlloc))
-		m.UpdateAggregatorValue("go..memory.gc.stack", float64(memStats.StackInuse))
+		m.UpdateAggregatorValue("go.memory.gc.stack", float64(memStats.StackInuse))
 
 		if lastPauseNs > 0 {
 			pauseSinceLastSample := memStats.PauseTotalNs - lastPauseNs
