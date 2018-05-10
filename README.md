@@ -6,7 +6,7 @@ The official Go client for the [AppOptics metrics API](https://docs.appoptics.co
 [![Go Report Card](https://goreportcard.com/badge/github.com/appoptics/appoptics-api-go)](https://goreportcard.com/report/github.com/appoptics/appoptics-api-go)
 
 ## See Also
-AppOptics also provides a [Go APM instrumentation](github.com/appoptics/appoptics-apm-go) library for distributed tracing.
+AppOptics also provides a [Go APM instrumentation](https://github.com/appoptics/appoptics-apm-go) library for distributed tracing.
 
 # Questions/Comments?
 Please [open an issue](https://github.com/appoptics/appoptics-api-go/issues/new), we'd love to hear from you.
