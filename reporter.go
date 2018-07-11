@@ -17,9 +17,9 @@ const (
 
 // Reporter provides a way to persist data from a set collection of Aggregators and Counters at a regular interval
 type Reporter struct {
-	measurementSet      *MeasurementSet
-	measurementsService *MeasurementsService
-	prefix              string
+	measurementSet   *MeasurementSet
+	measurementsComm MeasurementsCommunicator
+	prefix           string
 
 	batchChan             chan *MeasurementsBatch
 	measurementSetReports chan *MeasurementSetReport
@@ -29,10 +29,10 @@ type Reporter struct {
 
 // NewReporter returns a reporter for a given MeasurementSet, providing a way to sync metric information
 // to AppOptics for a collection of running metrics.
-func NewReporter(measurementSet *MeasurementSet, ms *MeasurementsService, prefix string) *Reporter {
+func NewReporter(measurementSet *MeasurementSet, communicator MeasurementsCommunicator, prefix string) *Reporter {
 	r := &Reporter{
 		measurementSet:        measurementSet,
-		measurementsService:   ms,
+		measurementsComm:      communicator,
 		prefix:                prefix,
 		batchChan:             make(chan *MeasurementsBatch, 100),
 		measurementSetReports: make(chan *MeasurementSetReport, 1000),
@@ -62,7 +62,7 @@ func (r *Reporter) postMeasurementBatches() {
 		tryCount := 0
 		for {
 			log.Debug("Uploading AppOptics measurements batch", "time", time.Unix(batch.Time, 0), "numMeasurements", len(batch.Measurements), "globalTags", r.globalTags)
-			_, err := r.measurementsService.Create(batch)
+			_, err := r.measurementsComm.Create(batch)
 			if err == nil {
 				break
 			}
