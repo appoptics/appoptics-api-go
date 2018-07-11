@@ -9,6 +9,7 @@ import (
 	ctxtags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/status"
 )
 
 type instrumentedServer struct {
@@ -40,11 +41,11 @@ func (s *instrumentedServer) received() {
 }
 
 func (s *instrumentedServer) handled(err error) {
-	s.m.Incr(s.key(grpc.Code(err).String()))
+	s.m.Incr(s.key(status.Code(err).String()))
 }
 
-func (s *instrumentedServer) timed(t float64) {
-	s.m.UpdateAggregatorValue(s.key("time_ms"), t)
+func (s *instrumentedServer) timed(t time.Duration) {
+	s.m.UpdateAggregatorValue(s.key("time_ms"), float64(t/time.Millisecond)+float64(t%time.Millisecond)/1e9)
 }
 
 type instrumentedServerStream struct {
@@ -81,9 +82,7 @@ func UnaryServerInterceptor(m *appoptics.MeasurementSet) grpc.UnaryServerInterce
 
 		start := time.Now()
 		resp, err := handler(ctx, req)
-		durationMs := time.Now().Sub(start) / time.Millisecond
-
-		instrument.timed(durationMs)
+		instrument.timed(time.Now().Sub(start))
 		instrument.handled(err)
 
 		if err == nil {
@@ -108,10 +107,8 @@ func StreamServerInterceptor(m *appoptics.MeasurementSet) grpc.StreamServerInter
 
 		start := time.Now()
 		err := handler(srv, instrument)
-		durationMs := time.Now().Sub(start) / time.Millisecond
-
+		instrument.timed(time.Now().Sub(start))
 		instrument.handled(err)
-		instrument.timed(durationMs)
 
 		return err
 	}
