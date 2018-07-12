@@ -23,7 +23,7 @@ func TestUnaryRequest(t *testing.T) {
 	measures := appoptics.NewMeasurementSet()
 	intercept := UnaryServerInterceptor(measures)
 	ctx := context.Background()
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	var handler grpc.UnaryHandler = func(ctx context.Context, req interface{}) (interface{}, error) {
 		return "something", nil
 	}
 	intercept(ctx, "some data", uInfo, handler)
