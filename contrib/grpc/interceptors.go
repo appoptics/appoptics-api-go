@@ -23,10 +23,6 @@ func (s *InstrumentedServer) key(key string) string {
 	return appoptics.MetricWithTags(fmt.Sprintf("%s.%s.%s", s.service, s.method, key), s.tags)
 }
 
-func (s *InstrumentedServer) sent() {
-	s.m.Incr(s.key("sent"))
-}
-
 func (s *InstrumentedServer) received() {
 	s.m.Incr(s.key("received"))
 }
@@ -47,17 +43,13 @@ type InstrumentedServerStream struct {
 
 func (s *InstrumentedServerStream) SendMsg(m interface{}) error {
 	err := s.ServerStream.SendMsg(m)
-	if err == nil {
-		s.InstrumentedServer.sent()
-	}
+	s.handled(err)
 	return err
 }
 
 func (s *InstrumentedServerStream) RecvMsg(m interface{}) error {
 	err := s.ServerStream.RecvMsg(m)
-	if err == nil {
-		s.InstrumentedServer.received()
-	}
+	s.received()
 	return err
 }
 
@@ -76,11 +68,6 @@ func UnaryServerInterceptor(m *appoptics.MeasurementSet) grpc.UnaryServerInterce
 		resp, err := handler(ctx, req)
 		instrument.timed(time.Now().Sub(start))
 		instrument.handled(err)
-
-		if err == nil {
-			instrument.sent()
-		}
-
 		return resp, err
 	}
 }
