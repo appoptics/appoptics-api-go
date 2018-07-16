@@ -1,18 +1,18 @@
 package interceptors
 
 import (
-	"context"
-	"testing"
-
-	"google.golang.org/grpc"
-	"github.com/appoptics/appoptics-api-go"
-	"github.com/stretchr/testify/assert"
 	"fmt"
 	"strings"
+	"testing"
+
+	"github.com/appoptics/appoptics-api-go"
+	"github.com/stretchr/testify/assert"
+	"golang.org/x/net/context"
+	"google.golang.org/grpc"
 )
 
 var (
-	srv = "server_full_of_testing"
+	srv   = "server_full_of_testing"
 	uInfo = &grpc.UnaryServerInfo{
 		FullMethod: "/something/blah",
 		Server:     srv,
