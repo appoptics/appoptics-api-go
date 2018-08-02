@@ -26,7 +26,7 @@ type Stream struct {
 	GroupFunction      *string `json:"group_function,omitempty"` // valid: average, sum, min, max
 	GroupBy            *string `json:"group_by,omitempty"`
 	SummaryFunction    *string `json:"summary_function,omitempty"`    // valid: average, sum, min, max, count
-	DownsampleFunction *string `json:"downsample_function,omitempty"` // valid: average, min, max, sum, cound
+	DownsampleFunction *string `json:"downsample_function,omitempty"` // valid: average, min, max, sum, count
 	Color              *string `json:"color,omitempty"`
 	UnitsShort         *string `json:"units_short,omitempty"`
 	UnitsLong          *string `json:"units_long,omitempty"`
