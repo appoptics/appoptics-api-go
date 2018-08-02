@@ -44,7 +44,7 @@ func TestSpacesService_Update(t *testing.T) {
 	space, err := client.SpacesService().Update(1, "MEMORY")
 
 	if err != nil {
-		t.Errorf("error running List: %v", err)
+		t.Errorf("error running Update: %v", err)
 	}
 
 	assert.Equal(t, space.Name, "MEMORY")

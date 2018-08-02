@@ -4,8 +4,8 @@ import (
 	"net/http"
 )
 
-func ListSpacesHandler() http.HandlerFunc  {
-	return func(w http.ResponseWriter, r *http.Request){
+func ListSpacesHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
 		responseBody := `{
   "query": {
     "found": 1,
@@ -25,8 +25,8 @@ func ListSpacesHandler() http.HandlerFunc  {
 	}
 }
 
-func RetrieveSpaceHandler() http.HandlerFunc  {
-	return func(w http.ResponseWriter, r *http.Request){
+func RetrieveSpaceHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
 		responseBody := `{
   "name": "CPUs",
   "id": 129,
@@ -49,8 +49,8 @@ func RetrieveSpaceHandler() http.HandlerFunc  {
 	}
 }
 
-func CreateSpaceHandler() http.HandlerFunc  {
-	return func(w http.ResponseWriter, r *http.Request){
+func CreateSpaceHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
 		responseBody := `{
   "id": 129,
   "name": "CPUs"
@@ -60,18 +60,18 @@ func CreateSpaceHandler() http.HandlerFunc  {
 	}
 }
 
-func UpdateSpaceHandler() http.HandlerFunc  {
-	return func(w http.ResponseWriter, r *http.Request){
+func UpdateSpaceHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
 		responseBody := `{
   "name": "MEMORY"
 }`
 
-	w.Write([]byte(responseBody))
+		w.Write([]byte(responseBody))
 	}
 }
 
-func DeleteSpaceHandler() http.HandlerFunc  {
-	return func(w http.ResponseWriter, r *http.Request){
-
+func DeleteSpaceHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNoContent)
 	}
 }

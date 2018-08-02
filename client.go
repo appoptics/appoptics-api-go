@@ -79,6 +79,8 @@ type Client struct {
 	measurementsService MeasurementsCommunicator
 	// spacesService embeds the httpClient and implements access to the Spaces API
 	spacesService SpacesCommunicator
+	// chartsService embeds the httpClient and implements access to the Charts API
+	chartsService ChartsCommunicator
 	// callerUserAgentFragment is placed in the User-Agent header
 	callerUserAgentFragment string
 }
@@ -108,6 +110,7 @@ func NewClient(token string, opts ...func(*Client) error) *Client {
 
 	c.measurementsService = NewMeasurementsService(c)
 	c.spacesService = NewSpacesService(c)
+	c.chartsService = NewChartsService(c)
 
 	for _, opt := range opts {
 		opt(c)
@@ -169,14 +172,19 @@ func BaseURLClientOption(urlString string) ClientOption {
 	}
 }
 
-// MeasurementsService represents the subset of the API that deals with AppOptics Measurements
+// MeasurementsService represents the subset of the API that deals with Measurements
 func (c *Client) MeasurementsService() MeasurementsCommunicator {
 	return c.measurementsService
 }
 
-// SpacesService represents the subset of the API that deals with  Measurements
+// SpacesService represents the subset of the API that deals with Spaces
 func (c *Client) SpacesService() SpacesCommunicator {
 	return c.spacesService
+}
+
+// ChartsService represents the subset of the API that deals with Charts
+func (c *Client) ChartsService() ChartsCommunicator {
+	return c.chartsService
 }
 
 // Error makes ErrorResponse satisfy the error interface and can be used to serialize error responses back to the httpClient
@@ -246,5 +254,3 @@ func dumpResponse(resp *http.Response) {
 		fmt.Printf("response body: %s\n\n", string(buf.Bytes()))
 	}
 }
-
-

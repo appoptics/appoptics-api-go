@@ -1,16 +1,16 @@
 package appoptics_test
 
-import(
-	"github.com/gorilla/mux"
-	"github.com/appoptics/appoptics-api-go"
-	"net/http/httptest"
+import (
 	"fmt"
-	"testing"
+	"net/http/httptest"
 	"os"
+	"testing"
+
+	"github.com/appoptics/appoptics-api-go"
+	"github.com/gorilla/mux"
 )
 
-
-var(
+var (
 	client *appoptics.Client
 	server *httptest.Server
 )
@@ -22,19 +22,19 @@ func setup() {
 	client = appoptics.NewClient("deadbeef", appoptics.BaseURLClientOption(serverURLWithVersion))
 }
 
-func teardown()  {
+func teardown() {
 	server.Close()
 }
 
-func TestMain(m *testing.M)  {
+func TestMain(m *testing.M) {
 	setup()
 	code := m.Run()
 	teardown()
 	os.Exit(code)
 }
 
-func NewServerTestMux() *mux.Router  {
-	router :=  mux.NewRouter()
+func NewServerTestMux() *mux.Router {
+	router := mux.NewRouter()
 
 	// Measurements
 
@@ -48,6 +48,11 @@ func NewServerTestMux() *mux.Router  {
 	router.Handle("/v1/spaces/{id}", DeleteSpaceHandler()).Methods("DELETE")
 
 	// Charts
+	router.Handle("/v1/spaces/{spaceId}/charts", ListChartsHandler()).Methods("GET")
+	router.Handle("/v1/spaces/{spaceId}/charts", CreateChartHandler()).Methods("POST")
+	router.Handle("/v1/spaces/{spaceId}/charts/{chartId}", RetrieveChartHandler()).Methods("GET")
+	router.Handle("/v1/spaces/{spaceId}/charts/{chartId}", UpdateChartHandler()).Methods("PUT")
+	router.Handle("/v1/spaces/{spaceId}/charts/{chartId}", DeleteChartHandler()).Methods("DELETE")
 
 	// Annotations
 
@@ -58,7 +63,6 @@ func NewServerTestMux() *mux.Router  {
 	// Jobs
 
 	// Snapshots
-
 
 	return router
 }
