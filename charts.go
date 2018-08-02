@@ -19,6 +19,7 @@ type Chart struct {
 
 type Stream struct {
 	ID                 *int    `json:"id,omitempty"`
+	Name               *string `json:"name,omitempty"`
 	Metric             *string `json:"metric,omitempty"`
 	Composite          *string `json:"composite,omitempty"`
 	Type               *string `json:"type,omitempty"`
