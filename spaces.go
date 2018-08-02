@@ -41,7 +41,7 @@ func NewSpacesService(c *Client) *SpacesService {
 	return &SpacesService{c}
 }
 
-// Create creates the space with the given name
+// Create creates the Space with the given name
 func (s *SpacesService) Create(name string) (*Space, error) {
 	requestedSpace := &Space{Name: name}
 	createdSpace := &Space{}
