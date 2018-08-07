@@ -1,7 +1,6 @@
 package appoptics
 
 import (
-	"encoding/json"
 	"fmt"
 )
 
@@ -78,7 +77,6 @@ func (cs *ChartsService) List(spaceId int) ([]*Chart, error) {
 	_, err = cs.client.Do(req, &charts)
 
 	if err != nil {
-		fmt.Println(err)
 		return nil, err
 	}
 
@@ -88,7 +86,6 @@ func (cs *ChartsService) List(spaceId int) ([]*Chart, error) {
 // Retrieve finds the Chart identified by the provided parameters
 func (cs *ChartsService) Retrieve(chartId, spaceId int) (*Chart, error) {
 	chart := &Chart{}
-
 	path := fmt.Sprintf("spaces/%d/charts/%d", spaceId, chartId)
 	req, err := cs.client.NewRequest("GET", path, nil)
 	if err != nil {
@@ -106,11 +103,7 @@ func (cs *ChartsService) Retrieve(chartId, spaceId int) (*Chart, error) {
 // Create creates the Chart in the Space
 func (cs *ChartsService) Create(chart *Chart, spaceId int) (*Chart, error) {
 	path := fmt.Sprintf("spaces/%d/charts", spaceId)
-	chartData, err := json.Marshal(chart)
-	if err != nil {
-		return nil, err
-	}
-	req, err := cs.client.NewRequest("POST", path, chartData)
+	req, err := cs.client.NewRequest("POST", path, chart)
 	if err != nil {
 		return nil, err
 	}
@@ -128,14 +121,13 @@ func (cs *ChartsService) Create(chart *Chart, spaceId int) (*Chart, error) {
 // Update takes a Chart representing requested changes to an existing Chart on the server
 // and returns the altered Chart from the server.
 func (cs *ChartsService) Update(existingChart *Chart, spaceId int) (*Chart, error) {
-	updatedChart := &Chart{}
 	path := fmt.Sprintf("spaces/%d/charts/%d", spaceId, existingChart.ID)
-
 	req, err := cs.client.NewRequest("PUT", path, existingChart)
 	if err != nil {
 		return nil, err
 	}
 
+	updatedChart := &Chart{}
 	_, err = cs.client.Do(req, updatedChart)
 
 	if err != nil {

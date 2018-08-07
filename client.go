@@ -49,14 +49,25 @@ func Version() string {
 type ServiceAccessor interface {
 	// MeasurementsService implements an interface for dealing with  Measurements
 	MeasurementsService() MeasurementsCommunicator
-	// SpacesService implements an interface for dealing with  Spaces
+	// SpacesService implements an interface for dealing with Spaces
 	SpacesService() SpacesCommunicator
+	// ChartsService implements an interface for dealing with Charts
+	ChartsService() ChartsCommunicator
+	// ServicesService implements an interface for dealing with Services
+	ServicesService() ServicesCommunicator
 }
 
 // ErrorResponse represents the response body returned when the API reports an error
 type ErrorResponse struct {
 	// Errors holds the error information from the API
 	Errors interface{} `json:"errors"`
+}
+
+type QueryInfo struct {
+	Found  int `json:"found,omitempty"`
+	Length int `json:"length,omitempty"`
+	Offset int `json:"offset,omitempty"`
+	Total  int `json:"total,omitempty"`
 }
 
 // RequestErrorMessage represents the error schema for request errors
@@ -81,6 +92,8 @@ type Client struct {
 	spacesService SpacesCommunicator
 	// chartsService embeds the httpClient and implements access to the Charts API
 	chartsService ChartsCommunicator
+	// servicesService embeds the httpClient and implements access to the Services API
+	servicesService ServicesCommunicator
 	// callerUserAgentFragment is placed in the User-Agent header
 	callerUserAgentFragment string
 }
@@ -111,6 +124,7 @@ func NewClient(token string, opts ...func(*Client) error) *Client {
 	c.measurementsService = NewMeasurementsService(c)
 	c.spacesService = NewSpacesService(c)
 	c.chartsService = NewChartsService(c)
+	c.servicesService = NewServiceService(c)
 
 	for _, opt := range opts {
 		opt(c)
@@ -185,6 +199,11 @@ func (c *Client) SpacesService() SpacesCommunicator {
 // ChartsService represents the subset of the API that deals with Charts
 func (c *Client) ChartsService() ChartsCommunicator {
 	return c.chartsService
+}
+
+// ServicesService represents the subset of the API that deals with Services
+func (c *Client) ServicesService() ServicesCommunicator {
+	return c.servicesService
 }
 
 // Error makes ErrorResponse satisfy the error interface and can be used to serialize error responses back to the httpClient

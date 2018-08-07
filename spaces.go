@@ -59,11 +59,10 @@ func (s *SpacesService) Create(name string) (*Space, error) {
 
 // List implements the  Spaces API's List command
 func (s *SpacesService) List(rp *RequestParameters) ([]*Space, error) {
-	var spaces []*Space
 	req, err := s.client.NewRequest("GET", "spaces", nil)
 
 	if err != nil {
-		return spaces, err
+		return nil, err
 	}
 
 	if rp != nil {
@@ -74,11 +73,10 @@ func (s *SpacesService) List(rp *RequestParameters) ([]*Space, error) {
 	_, err = s.client.Do(req, &spacesResponse)
 
 	if err != nil {
-		return spaces, err
+		return nil, err
 	}
 
-	spaces = spacesResponse.Spaces
-	return spaces, nil
+	return spacesResponse.Spaces, nil
 }
 
 // Retrieve implements the Spaces API's Retrieve command
