@@ -64,6 +64,12 @@ func NewServerTestMux() *mux.Router {
 	// Annotations
 
 	// Alerts
+	router.Handle("/v1/alerts", ListAlertsHandler()).Methods("GET")
+	router.Handle("/v1/alerts", CreateAlertHandler()).Methods("POST")
+	router.Handle("/v1/alerts/{alertId}", RetrieveAlertHandler()).Methods("GET")
+	router.Handle("/v1/alerts/{alertId}", UpdateAlertHandler()).Methods("PUT")
+	router.Handle("/v1/alerts/{alertId}", DeleteAlertHandler()).Methods("DELETE")
+	router.Handle("/v1/alerts/{alertId}/status", StatusAlertHandler()).Methods("GET")
 
 	// API Tokens
 

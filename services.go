@@ -13,7 +13,7 @@ type ServicesCommunicator interface {
 	List() (*ListServicesResponse, error)
 	Retrieve(int) (*Service, error)
 	Create(*Service) (*Service, error)
-	Update(*Service) (*Service, error)
+	Update(*Service) error
 	Delete(int) error
 }
 
@@ -82,26 +82,24 @@ func (ss *ServicesService) Create(s *Service) (*Service, error) {
 	return createdService, nil
 }
 
-// Create updates the Service
-func (ss *ServicesService) Update(s *Service) (*Service, error) {
+// Update updates the Service
+func (ss *ServicesService) Update(s *Service) error {
 	path := fmt.Sprintf("services/%d", *s.ID)
 	req, err := ss.client.NewRequest("PUT", path, s)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	updatedService := &Service{}
-
-	_, err = ss.client.Do(req, updatedService)
+	_, err = ss.client.Do(req, nil)
 
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return updatedService, nil
+	return nil
 }
 
-// Create deletes the Service
+// Delete deletes the Service
 func (ss *ServicesService) Delete(id int) error {
 	path := fmt.Sprintf("services/%d", id)
 	req, err := ss.client.NewRequest("DELETE", path, nil)

@@ -36,13 +36,6 @@ type Stream struct {
 	Max                *int    `json:"max,omitempty"`
 }
 
-type Tag struct {
-	Name    *string   `json:"name,omitempty"`
-	Values  []*string `json:"values,omitempty"`
-	Grouped *bool     `json:"grouped,omitempty"`
-	Dynamic *bool     `json:"dynamic,omitempty"`
-}
-
 type Threshold struct {
 	Operator *string  `json:"operator,omitempty"`
 	Value    *float64 `json:"value,omitempty"`
