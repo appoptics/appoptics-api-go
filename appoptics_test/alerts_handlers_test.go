@@ -14,7 +14,7 @@ func ListAlertsHandler() http.HandlerFunc {
 	"alerts": [{
 		"id": 1400310,
 		"name": "CPU.utilization",
-		"description": null,
+		"description": "How much power the box got",
 		"conditions": [{
 			"id": 1016,
 			"type": "above",
@@ -106,7 +106,6 @@ func CreateAlertHandler() http.HandlerFunc {
          "id":19376030,
          "type":"above",
          "metric_name":"web.nginx.response_time",
-         "source":null,
          "threshold":200.0,
          "summary_function":"max",
          "tags":[
