@@ -145,12 +145,10 @@ func (as *AlertsService) Delete(id int) error {
 
 	_, err = as.client.Do(req, nil)
 
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
+// Status returns the Alert's status
 func (as *AlertsService) Status(id int) (*AlertStatus, error) {
 	path := fmt.Sprintf("alerts/%d/status", id)
 	req, err := as.client.NewRequest("GET", path, nil)

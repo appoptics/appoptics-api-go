@@ -141,9 +141,5 @@ func (cs *ChartsService) Delete(chartId, spaceId int) error {
 
 	_, err = cs.client.Do(req, nil)
 
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }

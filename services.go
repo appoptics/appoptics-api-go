@@ -109,9 +109,5 @@ func (ss *ServicesService) Delete(id int) error {
 
 	_, err = ss.client.Do(req, nil)
 
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
