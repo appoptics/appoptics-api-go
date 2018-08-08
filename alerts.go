@@ -2,19 +2,18 @@ package appoptics
 
 import (
 	"fmt"
-	"time"
 )
 
 type Alert struct {
 	ID           *int              `json:"id,omitempty"`
 	Name         *string           `json:"name,omitempty"`
-	Description  *string           `json:"string,omitempty"`
-	Active       *bool             `json:"string,omitempty"`
+	Description  *string           `json:"description,omitempty"`
+	Active       *bool             `json:"active,omitempty"`
 	RearmSeconds *int              `json:"rearm_seconds,omitempty"`
 	Conditions   []*AlertCondition `json:"conditions,omitempty"`
 	Services     []*Service        `json:"services,omitempty"` // correspond to IDs of Service objects
-	CreatedAt    *time.Time        `json:created_at,omitempty`
-	UpdatedAt    *time.Time        `json:created_at,omitempty`
+	CreatedAt    *int              `json:"created_at,omitempty"`
+	UpdatedAt    *int              `json:"updated_at,omitempty"`
 }
 
 type AlertCondition struct {
@@ -48,7 +47,7 @@ type AlertsCommunicator interface {
 	Update(*Alert) error
 	AssociateToService(int, int) error
 	Delete(int) error
-	Status(int) error
+	Status(int) (*AlertStatus, error)
 }
 
 func NewAlertsService(c *Client) *AlertsService {
@@ -152,18 +151,20 @@ func (as *AlertsService) Delete(id int) error {
 	return nil
 }
 
-func (as *AlertsService) Status(id int) error {
+func (as *AlertsService) Status(id int) (*AlertStatus, error) {
 	path := fmt.Sprintf("alerts/%d/status", id)
 	req, err := as.client.NewRequest("GET", path, nil)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	_, err = as.client.Do(req, nil)
+	alertStatus := &AlertStatus{}
+
+	_, err = as.client.Do(req, alertStatus)
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return alertStatus, nil
 }
