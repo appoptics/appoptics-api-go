@@ -47,16 +47,12 @@ func Version() string {
 
 // ServiceAccessor defines an interface for talking to via domain-specific service constructs
 type ServiceAccessor interface {
-	// AlertsService implements an interface for deailing with Alerts
 	AlertsService() AlertsCommunicator
-	// MeasurementsService implements an interface for dealing with  Measurements
-	MeasurementsService() MeasurementsCommunicator
-	// SpacesService implements an interface for dealing with Spaces
-	SpacesService() SpacesCommunicator
-	// ChartsService implements an interface for dealing with Charts
+	ApiTokensService() ApiTokensCommunicator
 	ChartsService() ChartsCommunicator
-	// ServicesService implements an interface for dealing with Services
+	MeasurementsService() MeasurementsCommunicator
 	ServicesService() ServicesCommunicator
+	SpacesService() SpacesCommunicator
 }
 
 // ErrorResponse represents the response body returned when the API reports an error
@@ -87,6 +83,7 @@ type Client struct {
 	httpClient              httpClient
 	token                   string
 	alertsService           AlertsCommunicator
+	apiTokensService        ApiTokensCommunicator
 	measurementsService     MeasurementsCommunicator
 	spacesService           SpacesCommunicator
 	chartsService           ChartsCommunicator
@@ -118,10 +115,11 @@ func NewClient(token string, opts ...func(*Client) error) *Client {
 	}
 
 	c.alertsService = NewAlertsService(c)
-	c.measurementsService = NewMeasurementsService(c)
-	c.spacesService = NewSpacesService(c)
+	c.apiTokensService = NewApiTokensService(c)
 	c.chartsService = NewChartsService(c)
+	c.measurementsService = NewMeasurementsService(c)
 	c.servicesService = NewServiceService(c)
+	c.spacesService = NewSpacesService(c)
 
 	for _, opt := range opts {
 		opt(c)
@@ -186,6 +184,10 @@ func BaseURLClientOption(urlString string) ClientOption {
 // AlertsService represents the subset of the API that deals with Alerts
 func (c *Client) AlertsService() AlertsCommunicator {
 	return c.alertsService
+}
+
+func (c *Client) ApiTokensService() ApiTokensCommunicator {
+	return c.apiTokensService
 }
 
 // MeasurementsService represents the subset of the API that deals with Measurements

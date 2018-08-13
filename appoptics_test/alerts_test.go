@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/appoptics/appoptics-api-go"
-	"github.com/magiconair/properties/assert"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAlertsService_List(t *testing.T) {

@@ -118,7 +118,7 @@ func (as *AlertsService) Update(a *Alert) error {
 	return nil
 }
 
-// AssociateToService updates the Alert to allow assigning it to the Service identified
+// AssociateToService updates the Alert to allow assign it to the Service idenfitied
 func (as *AlertsService) AssociateToService(alertId, serviceId int) error {
 	path := fmt.Sprintf("alerts/%d/services", alertId)
 	bodyStruct := struct {
@@ -145,12 +145,10 @@ func (as *AlertsService) Delete(id int) error {
 
 	_, err = as.client.Do(req, nil)
 
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
+// Status returns the Alert's status
 func (as *AlertsService) Status(id int) (*AlertStatus, error) {
 	path := fmt.Sprintf("alerts/%d/status", id)
 	req, err := as.client.NewRequest("GET", path, nil)
