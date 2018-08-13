@@ -118,7 +118,7 @@ func (as *AlertsService) Update(a *Alert) error {
 	return nil
 }
 
-// AssociateToService updates the Alert to allow assign it to the Service idenfitied
+// AssociateToService updates the Alert to allow assigning it to the Service identified
 func (as *AlertsService) AssociateToService(alertId, serviceId int) error {
 	path := fmt.Sprintf("alerts/%d/services", alertId)
 	bodyStruct := struct {

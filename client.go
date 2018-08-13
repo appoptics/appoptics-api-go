@@ -65,6 +65,7 @@ type ErrorResponse struct {
 	Errors interface{} `json:"errors"`
 }
 
+// QueryInfo holds pagination information coming from list actions
 type QueryInfo struct {
 	Found  int `json:"found,omitempty"`
 	Length int `json:"length,omitempty"`
