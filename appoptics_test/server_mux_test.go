@@ -54,9 +54,22 @@ func NewServerTestMux() *mux.Router {
 	router.Handle("/v1/spaces/{spaceId}/charts/{chartId}", UpdateChartHandler()).Methods("PUT")
 	router.Handle("/v1/spaces/{spaceId}/charts/{chartId}", DeleteChartHandler()).Methods("DELETE")
 
+	// Services
+	router.Handle("/v1/services", ListServicesHandler()).Methods("GET")
+	router.Handle("/v1/services", CreateServiceHandler()).Methods("POST")
+	router.Handle("/v1/services/{serviceId}", RetrieveServiceHandler()).Methods("GET")
+	router.Handle("/v1/services/{serviceId}", UpdateServiceHandler()).Methods("PUT")
+	router.Handle("/v1/services/{serviceId}", DeleteServiceHandler()).Methods("DELETE")
+
 	// Annotations
 
 	// Alerts
+	router.Handle("/v1/alerts", ListAlertsHandler()).Methods("GET")
+	router.Handle("/v1/alerts", CreateAlertHandler()).Methods("POST")
+	router.Handle("/v1/alerts/{alertId}", RetrieveAlertHandler()).Methods("GET")
+	router.Handle("/v1/alerts/{alertId}", UpdateAlertHandler()).Methods("PUT")
+	router.Handle("/v1/alerts/{alertId}", DeleteAlertHandler()).Methods("DELETE")
+	router.Handle("/v1/alerts/{alertId}/status", StatusAlertHandler()).Methods("GET")
 
 	// API Tokens
 

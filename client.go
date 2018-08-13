@@ -45,18 +45,32 @@ func Version() string {
 	return fmt.Sprintf("%d.%d.%d", MajorVersion, MinorVersion, PatchVersion)
 }
 
-// ServiceAccessor defines an interface for talking to  via domain-specific service constructs
+// ServiceAccessor defines an interface for talking to via domain-specific service constructs
 type ServiceAccessor interface {
+	// AlertsService implements an interface for deailing with Alerts
+	AlertsService() AlertsCommunicator
 	// MeasurementsService implements an interface for dealing with  Measurements
 	MeasurementsService() MeasurementsCommunicator
-	// SpacesService implements an interface for dealing with  Spaces
+	// SpacesService implements an interface for dealing with Spaces
 	SpacesService() SpacesCommunicator
+	// ChartsService implements an interface for dealing with Charts
+	ChartsService() ChartsCommunicator
+	// ServicesService implements an interface for dealing with Services
+	ServicesService() ServicesCommunicator
 }
 
 // ErrorResponse represents the response body returned when the API reports an error
 type ErrorResponse struct {
 	// Errors holds the error information from the API
 	Errors interface{} `json:"errors"`
+}
+
+// QueryInfo holds pagination information coming from list actions
+type QueryInfo struct {
+	Found  int `json:"found,omitempty"`
+	Length int `json:"length,omitempty"`
+	Offset int `json:"offset,omitempty"`
+	Total  int `json:"total,omitempty"`
 }
 
 // RequestErrorMessage represents the error schema for request errors
@@ -69,25 +83,20 @@ type ParamErrorMessage []map[string]string
 
 // Client implements ServiceAccessor
 type Client struct {
-	// baseURL is the base endpoint of the remote  service
-	baseURL *url.URL
-	// httpClient is the http.Client singleton used for wire interaction
-	httpClient httpClient
-	// token is the private part of the API credential pair
-	token string
-	// measurementsService embeds the httpClient and implements access to the Measurements API
-	measurementsService MeasurementsCommunicator
-	// spacesService embeds the httpClient and implements access to the Spaces API
-	spacesService SpacesCommunicator
-	// chartsService embeds the httpClient and implements access to the Charts API
-	chartsService ChartsCommunicator
-	// callerUserAgentFragment is placed in the User-Agent header
+	baseURL                 *url.URL
+	httpClient              httpClient
+	token                   string
+	alertsService           AlertsCommunicator
+	measurementsService     MeasurementsCommunicator
+	spacesService           SpacesCommunicator
+	chartsService           ChartsCommunicator
+	servicesService         ServicesCommunicator
 	callerUserAgentFragment string
 }
 
 // httpClient defines the http.Client method used by Client.
 type httpClient interface {
-	Do(req *http.Request) (*http.Response, error)
+	Do(*http.Request) (*http.Response, error)
 }
 
 // ClientOption provides functional option-setting behavior
@@ -108,9 +117,11 @@ func NewClient(token string, opts ...func(*Client) error) *Client {
 		},
 	}
 
+	c.alertsService = NewAlertsService(c)
 	c.measurementsService = NewMeasurementsService(c)
 	c.spacesService = NewSpacesService(c)
 	c.chartsService = NewChartsService(c)
+	c.servicesService = NewServiceService(c)
 
 	for _, opt := range opts {
 		opt(c)
@@ -172,6 +183,11 @@ func BaseURLClientOption(urlString string) ClientOption {
 	}
 }
 
+// AlertsService represents the subset of the API that deals with Alerts
+func (c *Client) AlertsService() AlertsCommunicator {
+	return c.alertsService
+}
+
 // MeasurementsService represents the subset of the API that deals with Measurements
 func (c *Client) MeasurementsService() MeasurementsCommunicator {
 	return c.measurementsService
@@ -185,6 +201,11 @@ func (c *Client) SpacesService() SpacesCommunicator {
 // ChartsService represents the subset of the API that deals with Charts
 func (c *Client) ChartsService() ChartsCommunicator {
 	return c.chartsService
+}
+
+// ServicesService represents the subset of the API that deals with Services
+func (c *Client) ServicesService() ServicesCommunicator {
+	return c.servicesService
 }
 
 // Error makes ErrorResponse satisfy the error interface and can be used to serialize error responses back to the httpClient
