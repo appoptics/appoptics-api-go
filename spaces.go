@@ -24,6 +24,10 @@ type Space struct {
 	Name string `json:"name","omitempty"`
 }
 
+type SpaceRequest struct {
+	Name string `json:"name", "omitempty"`
+}
+
 // SpacesCommunicator defines the interface for the Spaces API
 type SpacesCommunicator interface {
 	Create(string) (*Space, error)
@@ -43,7 +47,7 @@ func NewSpacesService(c *Client) *SpacesService {
 
 // Create creates the Space with the given name
 func (s *SpacesService) Create(name string) (*Space, error) {
-	requestedSpace := &Space{Name: name}
+	requestedSpace := &SpaceRequest{Name: name}
 	createdSpace := &Space{}
 	req, err := s.client.NewRequest("POST", "spaces", requestedSpace)
 	if err != nil {

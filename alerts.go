@@ -11,7 +11,8 @@ type Alert struct {
 	Active       *bool             `json:"active,omitempty"`
 	RearmSeconds *int              `json:"rearm_seconds,omitempty"`
 	Conditions   []*AlertCondition `json:"conditions,omitempty"`
-	Services     []*Service        `json:"services,omitempty"` // correspond to IDs of Service objects
+	Attributes   map[string][]string     `json:"attributes","omitempty"`
+	Services     []*int        `json:"services,omitempty"` // correspond to IDs of Service objects
 	CreatedAt    *int              `json:"created_at,omitempty"`
 	UpdatedAt    *int              `json:"updated_at,omitempty"`
 }
