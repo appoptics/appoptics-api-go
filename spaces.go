@@ -47,9 +47,11 @@ func NewSpacesService(c *Client) *SpacesService {
 
 // Create creates the Space with the given name
 func (s *SpacesService) Create(name string) (*Space, error) {
-	requestedSpace := &SpaceRequest{Name: name}
+	bodyStruct := struct {
+		Name string `json:"name"`
+	}{name}
 	createdSpace := &Space{}
-	req, err := s.client.NewRequest("POST", "spaces", requestedSpace)
+	req, err := s.client.NewRequest("POST", "spaces", bodyStruct)
 	if err != nil {
 		return nil, err
 	}
