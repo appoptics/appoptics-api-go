@@ -24,10 +24,6 @@ type Space struct {
 	Name string `json:"name","omitempty"`
 }
 
-type SpaceRequest struct {
-	Name string `json:"name", "omitempty"`
-}
-
 // SpacesCommunicator defines the interface for the Spaces API
 type SpacesCommunicator interface {
 	Create(string) (*Space, error)
