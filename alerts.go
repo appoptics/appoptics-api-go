@@ -5,16 +5,16 @@ import (
 )
 
 type Alert struct {
-	ID           *int              `json:"id,omitempty"`
-	Name         *string           `json:"name,omitempty"`
-	Description  *string           `json:"description,omitempty"`
-	Active       *bool             `json:"active,omitempty"`
-	RearmSeconds *int              `json:"rearm_seconds,omitempty"`
-	Conditions   []*AlertCondition `json:"conditions,omitempty"`
+	ID           *int                   `json:"id,omitempty"`
+	Name         *string                `json:"name,omitempty"`
+	Description  *string                `json:"description,omitempty"`
+	Active       *bool                  `json:"active,omitempty"`
+	RearmSeconds *int                   `json:"rearm_seconds,omitempty"`
+	Conditions   []*AlertCondition      `json:"conditions,omitempty"`
 	Attributes   map[string]interface{} `json:"attributes","omitempty"`
-	Services     []*Service        `json:"services,omitempty"` // correspond to IDs of Service objects
-	CreatedAt    *int              `json:"created_at,omitempty"`
-	UpdatedAt    *int              `json:"updated_at,omitempty"`
+	Services     []*Service             `json:"services,omitempty"` // correspond to IDs of Service objects
+	CreatedAt    *int                   `json:"created_at,omitempty"`
+	UpdatedAt    *int                   `json:"updated_at,omitempty"`
 }
 
 type AlertCondition struct {
