@@ -123,7 +123,7 @@ func (as *AlertsService) Update(a *Alert) error {
 func (as *AlertsService) AssociateToService(alertId, serviceId int) error {
 	path := fmt.Sprintf("alerts/%d/services", alertId)
 	bodyStruct := struct {
-		ID int `json:"id"`
+		ID int `json:"service"`
 	}{serviceId}
 	req, err := as.client.NewRequest("POST", path, bodyStruct)
 
