@@ -133,6 +133,9 @@ func (as *AlertsService) AssociateToService(alertId, serviceId int) error {
 
 	_, err = as.client.Do(req, nil)
 
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
