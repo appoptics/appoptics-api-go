@@ -70,6 +70,8 @@ func NewServerTestMux() *mux.Router {
 	router.Handle("/v1/alerts/{alertId}", UpdateAlertHandler()).Methods("PUT")
 	router.Handle("/v1/alerts/{alertId}", DeleteAlertHandler()).Methods("DELETE")
 	router.Handle("/v1/alerts/{alertId}/status", StatusAlertHandler()).Methods("GET")
+	router.Handle("/v1/alerts/{alertId}/services", AssociateAlertHandler()).Methods("POST")
+	router.Handle("/v1/alerts/{alertId}/services/{serviceId}", DisassociateAlertHandler()).Methods("DELETE")
 
 	// API Tokens
 	router.Handle("/v1/api_tokens", ListApiTokensHandler()).Methods("GET")

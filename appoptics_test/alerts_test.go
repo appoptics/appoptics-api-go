@@ -98,3 +98,21 @@ func TestAlertsService_Status(t *testing.T) {
 	assert.Equal(t, "triggered", *alertStatus.Status)
 
 }
+
+func TestAlertsService_Associate(t *testing.T) {
+	err := client.AlertsService().AssociateToService(123, 17584)
+
+	if err != nil {
+		t.Errorf("error running Status: %v", err)
+	}
+	assert.Equal(t, nil, err)
+}
+
+func TestAlertsService_Disassociate(t *testing.T) {
+	err := client.AlertsService().DisassociateFromService(123, 17584)
+	if err != nil {
+		t.Errorf("error running Retrieve: %v", err)
+	}
+
+	assert.Equal(t, nil, err)
+}
