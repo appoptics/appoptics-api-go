@@ -5,15 +5,16 @@ import (
 )
 
 type Alert struct {
-	ID           *int              `json:"id,omitempty"`
-	Name         *string           `json:"name,omitempty"`
-	Description  *string           `json:"description,omitempty"`
-	Active       *bool             `json:"active,omitempty"`
-	RearmSeconds *int              `json:"rearm_seconds,omitempty"`
-	Conditions   []*AlertCondition `json:"conditions,omitempty"`
-	Services     []*Service        `json:"services,omitempty"` // correspond to IDs of Service objects
-	CreatedAt    *int              `json:"created_at,omitempty"`
-	UpdatedAt    *int              `json:"updated_at,omitempty"`
+	ID           *int                   `json:"id,omitempty"`
+	Name         *string                `json:"name,omitempty"`
+	Description  *string                `json:"description,omitempty"`
+	Active       *bool                  `json:"active,omitempty"`
+	RearmSeconds *int                   `json:"rearm_seconds,omitempty"`
+	Conditions   []*AlertCondition      `json:"conditions,omitempty"`
+	Attributes   map[string]interface{} `json:"attributes","omitempty"`
+	Services     []*Service             `json:"services,omitempty"` // correspond to IDs of Service objects
+	CreatedAt    *int                   `json:"created_at,omitempty"`
+	UpdatedAt    *int                   `json:"updated_at,omitempty"`
 }
 
 type AlertCondition struct {
@@ -122,7 +123,7 @@ func (as *AlertsService) Update(a *Alert) error {
 func (as *AlertsService) AssociateToService(alertId, serviceId int) error {
 	path := fmt.Sprintf("alerts/%d/services", alertId)
 	bodyStruct := struct {
-		ID int `json:"id"`
+		ID int `json:"service"`
 	}{serviceId}
 	req, err := as.client.NewRequest("POST", path, bodyStruct)
 
@@ -132,6 +133,9 @@ func (as *AlertsService) AssociateToService(alertId, serviceId int) error {
 
 	_, err = as.client.Do(req, nil)
 
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
