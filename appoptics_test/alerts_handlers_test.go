@@ -168,3 +168,13 @@ func DeleteAlertHandler() http.HandlerFunc {
 		w.WriteHeader(http.StatusNoContent)
 	}
 }
+func DisassociateAlertHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusCreated)
+	}
+}
+func AssociateAlertHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusCreated)
+	}
+}

@@ -47,6 +47,7 @@ type AlertsCommunicator interface {
 	Create(*Alert) (*Alert, error)
 	Update(*Alert) error
 	AssociateToService(int, int) error
+	DisassociateFromService(alertId, serviceId int) error
 	Delete(int) error
 	Status(int) (*AlertStatus, error)
 }
@@ -119,13 +120,30 @@ func (as *AlertsService) Update(a *Alert) error {
 	return nil
 }
 
-// AssociateToService updates the Alert to allow assign it to the Service idenfitied
+// AssociateToService updates the Alert to allow assign it to the Service identified
 func (as *AlertsService) AssociateToService(alertId, serviceId int) error {
 	path := fmt.Sprintf("alerts/%d/services", alertId)
 	bodyStruct := struct {
 		ID int `json:"service"`
 	}{serviceId}
 	req, err := as.client.NewRequest("POST", path, bodyStruct)
+
+	if err != nil {
+		return err
+	}
+
+	_, err = as.client.Do(req, nil)
+
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// DisassociateFromService updates the Alert to remove the Service identified
+func (as *AlertsService) DisassociateFromService(alertId, serviceId int) error {
+	path := fmt.Sprintf("alerts/%d/services/%d", alertId, serviceId)
+	req, err := as.client.NewRequest("DELETE", path, nil)
 
 	if err != nil {
 		return err
