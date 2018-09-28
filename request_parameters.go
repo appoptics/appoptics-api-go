@@ -7,17 +7,17 @@ import (
 
 // RequestParameters holds pagination values
 // https://docs.appoptics.com/api/?shell#request-parameters
-type RequestParameters struct{
-	Offset int
-	Length int
+type RequestParameters struct {
+	Offset  int
+	Length  int
 	Orderby string
-	Sort string
+	Sort    string
 }
 
 // AddToRequest mutates the provided http.Request with the RequestParameters values
 // Note that only valid values for Sort are "asc" and "desc" but the client does not enforce this.
-func (rp *RequestParameters)AddToRequest(req *http.Request)  {
-	if rp == nil{
+func (rp *RequestParameters) AddToRequest(req *http.Request) {
+	if rp == nil {
 		return
 	}
 	values := req.URL.Query()
