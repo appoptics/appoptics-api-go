@@ -47,7 +47,7 @@ type BatchPersister struct {
 	sendStats bool
 }
 
-// NewBatchPersister sets up a new instance of batched persistence capabilites using the provided MeasurementsCommunicator
+// NewBatchPersister sets up a new instance of batched persistence capabilities using the provided MeasurementsCommunicator
 func NewBatchPersister(mc MeasurementsCommunicator, sendStats bool) *BatchPersister {
 	return &BatchPersister{
 		mc:                  mc,

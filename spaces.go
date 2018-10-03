@@ -13,15 +13,15 @@ type ListSpacesResponse struct {
 // RetrieveSpaceResponse represents the returned data payload from Spaces API's Retrieve command (/spaces/:id)
 type RetrieveSpaceResponse struct {
 	Space
-	Charts []map[string]int `json:"charts","omitempty"`
+	Charts []map[string]int `json:"charts,omitempty"`
 }
 
 // Space represents a single AppOptics Space
 type Space struct {
 	// ID is the unique identifier of the Space
-	ID int `json:"id","omitempty"`
+	ID int `json:"id,omitempty"`
 	// Name is the name of the Space
-	Name string `json:"name","omitempty"`
+	Name string `json:"name,omitempty"`
 }
 
 // SpacesCommunicator defines the interface for the Spaces API
