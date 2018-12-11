@@ -47,6 +47,7 @@ type AnnotationsCommunicator interface {
 	RetrieveEvent(string, int) (*AnnotationEvent, error)
 	Create(*AnnotationEvent, string) (*AnnotationEvent, error)
 	Update(string, int, *AnnotationLink) (*AnnotationEvent, error)
+	Delete(string) error
 }
 
 type AnnotationsService struct {
@@ -156,5 +157,34 @@ func (as *AnnotationsService) Create(event *AnnotationEvent, streamName string) 
 
 // Update adds a link to an annotation Event
 func (as *AnnotationsService) Update(streamName string, id int, link *AnnotationLink) (*AnnotationEvent, error) {
-	return nil, nil
+	event := &AnnotationEvent{}
+	path := fmt.Sprintf("annotations/%s/%d/links", streamName, id)
+	req, err := as.client.NewRequest("POST", path, link)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = as.client.Do(req, event)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return event, nil
+}
+
+// Delete deletes the annotation stream matching the provided name
+func (as *AnnotationsService) Delete(streamName string) error {
+	path := fmt.Sprintf("annotations/%s", streamName)
+	req, err := as.client.NewRequest("DELETE", path, nil)
+	if err != nil {
+		return err
+	}
+
+	_, err = as.client.Do(req, nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
