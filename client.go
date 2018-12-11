@@ -88,6 +88,7 @@ type Client struct {
 	spacesService           SpacesCommunicator
 	chartsService           ChartsCommunicator
 	servicesService         ServicesCommunicator
+	annotationsService      AnnotationsCommunicator
 	callerUserAgentFragment string
 }
 
@@ -120,6 +121,7 @@ func NewClient(token string, opts ...func(*Client) error) *Client {
 	c.measurementsService = NewMeasurementsService(c)
 	c.servicesService = NewServiceService(c)
 	c.spacesService = NewSpacesService(c)
+	c.annotationsService = NewAnnotationsService(c)
 
 	for _, opt := range opts {
 		opt(c)
