@@ -212,6 +212,11 @@ func (c *Client) ServicesService() ServicesCommunicator {
 	return c.servicesService
 }
 
+// AnnotationsService represents the subset of the API that deals with Annotations
+func (c *Client) AnnotationsService() AnnotationsCommunicator {
+	return c.annotationsService
+}
+
 // Error makes ErrorResponse satisfy the error interface and can be used to serialize error responses back to the httpClient
 func (e *ErrorResponse) Error() string {
 	errorData, _ := json.Marshal(e)

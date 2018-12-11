@@ -3,17 +3,19 @@ package appoptics
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 )
 
 type AnnotationStream struct {
-	Name        string                       `json:"name"`
-	DisplayName string                       `json:"display_name,omitempty"`
-	Events      map[string][]AnnotationEvent `json:"events,omitempty"`
+	Name        string                         `json:"name"`
+	DisplayName string                         `json:"display_name,omitempty"`
+	Events      []map[string][]AnnotationEvent `json:"events,omitempty"`
 }
 
 // AnnotationEvent is the main data structure for the Annotations API
 type AnnotationEvent struct {
+	ID          int              `json:"id"`
 	Title       string           `json:"title"`
 	Source      string           `json:"source,omitempty"`
 	Description string           `json:"description,omitempty"`
@@ -42,11 +44,11 @@ type ListAnnotationsResponse struct {
 }
 
 type AnnotationsCommunicator interface {
-	List(string) (*ListAnnotationsResponse, error)
+	List(*string) (*ListAnnotationsResponse, error)
 	Retrieve(*RetrieveAnnotationsRequest) (*AnnotationStream, error)
 	RetrieveEvent(string, int) (*AnnotationEvent, error)
 	Create(*AnnotationEvent, string) (*AnnotationEvent, error)
-	Update(string, int, *AnnotationLink) (*AnnotationEvent, error)
+	Update(string, int, *AnnotationLink) (*AnnotationLink, error)
 	Delete(string) error
 }
 
@@ -58,10 +60,19 @@ func NewAnnotationsService(c *Client) *AnnotationsService {
 	return &AnnotationsService{c}
 }
 
-// List retrieves all AnnotationEvents for the provided stream name
-func (as *AnnotationsService) List(streamName string) (*ListAnnotationsResponse, error) {
-	path := fmt.Sprintf("annotations?name=%s", streamName)
-	var annotations *ListAnnotationsResponse
+// List retrieves paginated AnnotationEvents for all streams with name LIKE argument string
+func (as *AnnotationsService) List(streamNameSearch *string) (*ListAnnotationsResponse, error) {
+	var (
+		path        string
+		annotations *ListAnnotationsResponse
+	)
+
+	if streamNameSearch != nil {
+		path = fmt.Sprintf("annotations?name=%s", *streamNameSearch)
+	} else {
+		path = "annotations"
+	}
+
 	req, err := as.client.NewRequest("GET", path, nil)
 	if err != nil {
 		return nil, err
@@ -96,20 +107,14 @@ func (as *AnnotationsService) Retrieve(retReq *RetrieveAnnotationsRequest) (*Ann
 }
 
 func (retReq *RetrieveAnnotationsRequest) queryString(req *http.Request) string {
-	var (
-		stringStartTime string
-		stringEndTime   string
-	)
 	q := req.URL.Query()
 
 	if !retReq.StartTime.IsZero() {
-		stringStartTime = fmt.Sprintf("%s", retReq.StartTime.Unix())
-		q.Add("start_time", stringStartTime)
+		q.Add("start_time", strconv.FormatInt(retReq.StartTime.Unix(), 10))
 	}
 
 	if !retReq.EndTime.IsZero() {
-		stringEndTime = fmt.Sprintf("%s", retReq.EndTime.Unix())
-		q.Add("end_time", stringEndTime)
+		q.Add("end_time", strconv.FormatInt(retReq.EndTime.Unix(), 10))
 	}
 
 	if len(retReq.Sources) > 0 {
@@ -152,25 +157,25 @@ func (as *AnnotationsService) Create(event *AnnotationEvent, streamName string) 
 		return nil, err
 	}
 
-	return nil, nil
+	return createdEvent, nil
 }
 
 // Update adds a link to an annotation Event
-func (as *AnnotationsService) Update(streamName string, id int, link *AnnotationLink) (*AnnotationEvent, error) {
-	event := &AnnotationEvent{}
+func (as *AnnotationsService) Update(streamName string, id int, link *AnnotationLink) (*AnnotationLink, error) {
+	newLink := &AnnotationLink{}
 	path := fmt.Sprintf("annotations/%s/%d/links", streamName, id)
 	req, err := as.client.NewRequest("POST", path, link)
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = as.client.Do(req, event)
+	_, err = as.client.Do(req, newLink)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return event, nil
+	return newLink, nil
 }
 
 // Delete deletes the annotation stream matching the provided name
