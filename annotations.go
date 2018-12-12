@@ -7,10 +7,11 @@ import (
 	"time"
 )
 
+// AnnotationStream is a group of AnnotationEvents with a common name, representing a timeseries of occurrences of similar events
 type AnnotationStream struct {
 	Name        string                         `json:"name"`
 	DisplayName string                         `json:"display_name,omitempty"`
-	Events      []map[string][]AnnotationEvent `json:"events,omitempty"`
+	Events      []map[string][]AnnotationEvent `json:"events,omitempty"` // keys are Source names
 }
 
 // AnnotationEvent is the main data structure for the Annotations API
@@ -43,6 +44,7 @@ type ListAnnotationsResponse struct {
 	Query             QueryInfo           `json:"query"`
 }
 
+// AnnotationsCommunicator provides an interface to the Annotations API from AppOptics
 type AnnotationsCommunicator interface {
 	List(*string) (*ListAnnotationsResponse, error)
 	Retrieve(*RetrieveAnnotationsRequest) (*AnnotationStream, error)
