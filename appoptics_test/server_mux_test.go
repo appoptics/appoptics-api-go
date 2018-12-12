@@ -65,9 +65,10 @@ func NewServerTestMux() *mux.Router {
 	// Annotations
 	router.Handle("/v1/annotations", ListAnnotationsHandler()).Methods("GET")
 	router.Handle("/v1/annotations/{streamName}", CreateAnnotationHandler()).Methods("POST")
+	router.Handle("/v1/annotations/{streamName}", UpdateAnnotationStreamHandler()).Methods("PUT")
 	router.Handle("/v1/annotations/{streamName}", RetrieveAnnotationsHandler()).Methods("GET")
 	router.Handle("/v1/annotations/{streamName}/{eventID}", RetrieveAnnotationEventHandler()).Methods("GET")
-	router.Handle("/v1/annotations/{streamName}/{eventID}/links", UpdateAnnotationHandler()).Methods("POST")
+	router.Handle("/v1/annotations/{streamName}/{eventID}/links", UpdateAnnotationEventHandler()).Methods("POST")
 	router.Handle("/v1/annotations/{streamName}", DeleteAnnotationHandler()).Methods("DELETE")
 
 	// Alerts

@@ -130,7 +130,7 @@ func CreateAnnotationHandler() http.HandlerFunc {
 	}
 }
 
-func UpdateAnnotationHandler() http.HandlerFunc {
+func UpdateAnnotationEventHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		responseBody := `{
   "rel": "github",
@@ -139,6 +139,11 @@ func UpdateAnnotationHandler() http.HandlerFunc {
 }`
 		w.WriteHeader(http.StatusCreated)
 		w.Write([]byte(responseBody))
+	}
+}
+func UpdateAnnotationStreamHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNoContent)
 	}
 }
 

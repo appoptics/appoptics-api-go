@@ -82,9 +82,14 @@ func TestAnnotationsService_RetrieveEvent(t *testing.T) {
 	assert.Equal(t, "github", annResponse.Links[0].Rel)
 }
 
-func TestAnnotationsService_Update(t *testing.T) {
+func TestAnnotationsService_UpdateStream(t *testing.T) {
+	err := client.AnnotationsService().UpdateStream("foo", "bar")
+	require.Nil(t, err)
+}
+
+func TestAnnotationsService_UpdateEvent(t *testing.T) {
 	link := &appoptics.AnnotationLink{} // blank b/c we're testing client processing fixture data
-	annResponse, err := client.AnnotationsService().Update("foobar", 123, link)
+	annResponse, err := client.AnnotationsService().UpdateEvent("foobar", 123, link)
 	require.Nil(t, err)
 
 	assert.Equal(t, "github", annResponse.Rel)

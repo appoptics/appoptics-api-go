@@ -48,7 +48,8 @@ type AnnotationsCommunicator interface {
 	Retrieve(*RetrieveAnnotationsRequest) (*AnnotationStream, error)
 	RetrieveEvent(string, int) (*AnnotationEvent, error)
 	Create(*AnnotationEvent, string) (*AnnotationEvent, error)
-	Update(string, int, *AnnotationLink) (*AnnotationLink, error)
+	UpdateStream(string, string) error
+	UpdateEvent(string, int, *AnnotationLink) (*AnnotationLink, error)
 	Delete(string) error
 }
 
@@ -160,8 +161,25 @@ func (as *AnnotationsService) Create(event *AnnotationEvent, streamName string) 
 	return createdEvent, nil
 }
 
-// Update adds a link to an annotation Event
-func (as *AnnotationsService) Update(streamName string, id int, link *AnnotationLink) (*AnnotationLink, error) {
+// UpdateStream updates the display name of the stream
+func (as *AnnotationsService) UpdateStream(streamName, displayName string) error {
+	path := fmt.Sprintf("annotations/%s", streamName)
+	jsonTemplate := `{"display_name": %s}`
+	req, err := as.client.NewRequest("POST", path, fmt.Sprintf(jsonTemplate, displayName))
+	if err != nil {
+		return err
+	}
+
+	_, err = as.client.Do(req, nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// UpdateEvent adds a link to an annotation Event
+func (as *AnnotationsService) UpdateEvent(streamName string, id int, link *AnnotationLink) (*AnnotationLink, error) {
 	newLink := &AnnotationLink{}
 	path := fmt.Sprintf("annotations/%s/%d/links", streamName, id)
 	req, err := as.client.NewRequest("POST", path, link)
