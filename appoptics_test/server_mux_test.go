@@ -27,7 +27,6 @@ func teardown() {
 }
 
 func TestMain(m *testing.M) {
-	defer server.Close()
 	setup()
 	code := m.Run()
 	teardown()
