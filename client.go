@@ -79,16 +79,19 @@ type ParamErrorMessage []map[string]string
 
 // Client implements ServiceAccessor
 type Client struct {
-	baseURL                 *url.URL
-	httpClient              httpClient
-	token                   string
-	alertsService           AlertsCommunicator
-	apiTokensService        ApiTokensCommunicator
-	measurementsService     MeasurementsCommunicator
-	spacesService           SpacesCommunicator
-	chartsService           ChartsCommunicator
-	servicesService         ServicesCommunicator
-	annotationsService      AnnotationsCommunicator
+	baseURL    *url.URL
+	httpClient httpClient
+	token      string
+
+	alertsService       AlertsCommunicator
+	annotationsService  AnnotationsCommunicator
+	apiTokensService    ApiTokensCommunicator
+	jobsService         JobsCommunicator
+	chartsService       ChartsCommunicator
+	measurementsService MeasurementsCommunicator
+	spacesService       SpacesCommunicator
+	servicesService     ServicesCommunicator
+
 	callerUserAgentFragment string
 }
 
@@ -116,12 +119,13 @@ func NewClient(token string, opts ...func(*Client) error) *Client {
 	}
 
 	c.alertsService = NewAlertsService(c)
+	c.annotationsService = NewAnnotationsService(c)
 	c.apiTokensService = NewApiTokensService(c)
 	c.chartsService = NewChartsService(c)
+	c.jobsService = NewJobsService(c)
 	c.measurementsService = NewMeasurementsService(c)
 	c.servicesService = NewServiceService(c)
 	c.spacesService = NewSpacesService(c)
-	c.annotationsService = NewAnnotationsService(c)
 
 	for _, opt := range opts {
 		opt(c)
@@ -188,8 +192,18 @@ func (c *Client) AlertsService() AlertsCommunicator {
 	return c.alertsService
 }
 
+// AnnotationsService represents the subset of the API that deals with Annotations
+func (c *Client) AnnotationsService() AnnotationsCommunicator {
+	return c.annotationsService
+}
+
 func (c *Client) ApiTokensService() ApiTokensCommunicator {
 	return c.apiTokensService
+}
+
+// JobsService represents the subset of the API that deals with Jobs
+func (c *Client) JobsService() JobsCommunicator {
+	return c.jobsService
 }
 
 // MeasurementsService represents the subset of the API that deals with Measurements
@@ -210,11 +224,6 @@ func (c *Client) ChartsService() ChartsCommunicator {
 // ServicesService represents the subset of the API that deals with Services
 func (c *Client) ServicesService() ServicesCommunicator {
 	return c.servicesService
-}
-
-// AnnotationsService represents the subset of the API that deals with Annotations
-func (c *Client) AnnotationsService() AnnotationsCommunicator {
-	return c.annotationsService
 }
 
 // Error makes ErrorResponse satisfy the error interface and can be used to serialize error responses back to the httpClient
