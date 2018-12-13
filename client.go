@@ -88,6 +88,7 @@ type Client struct {
 	spacesService           SpacesCommunicator
 	chartsService           ChartsCommunicator
 	servicesService         ServicesCommunicator
+	annotationsService      AnnotationsCommunicator
 	callerUserAgentFragment string
 }
 
@@ -120,6 +121,7 @@ func NewClient(token string, opts ...func(*Client) error) *Client {
 	c.measurementsService = NewMeasurementsService(c)
 	c.servicesService = NewServiceService(c)
 	c.spacesService = NewSpacesService(c)
+	c.annotationsService = NewAnnotationsService(c)
 
 	for _, opt := range opts {
 		opt(c)
@@ -208,6 +210,11 @@ func (c *Client) ChartsService() ChartsCommunicator {
 // ServicesService represents the subset of the API that deals with Services
 func (c *Client) ServicesService() ServicesCommunicator {
 	return c.servicesService
+}
+
+// AnnotationsService represents the subset of the API that deals with Annotations
+func (c *Client) AnnotationsService() AnnotationsCommunicator {
+	return c.annotationsService
 }
 
 // Error makes ErrorResponse satisfy the error interface and can be used to serialize error responses back to the httpClient
