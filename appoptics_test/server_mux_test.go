@@ -88,8 +88,11 @@ func NewServerTestMux() *mux.Router {
 	router.Handle("/v1/api_tokens/{tokenId}", DeleteApiTokenHandler()).Methods("DELETE")
 
 	// Jobs
+	router.Handle("/v1/jobs/{jobID}", RetrieveJobsHandler()).Methods("GET")
 
 	// Snapshots
+	router.Handle("/v1/snapshots", CreateSnapshotHandler()).Methods("POST")
+	router.Handle("/v1/snapshots/{snapshotID}", RetrieveSnapshotHandler()).Methods("GET")
 
 	return router
 }
