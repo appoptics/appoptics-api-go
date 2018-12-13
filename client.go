@@ -48,10 +48,13 @@ func Version() string {
 // ServiceAccessor defines an interface for talking to via domain-specific service constructs
 type ServiceAccessor interface {
 	AlertsService() AlertsCommunicator
+	AnnotationsService() AnnotationsCommunicator
 	ApiTokensService() ApiTokensCommunicator
 	ChartsService() ChartsCommunicator
+	JobsService() JobsCommunicator
 	MeasurementsService() MeasurementsCommunicator
 	ServicesService() ServicesCommunicator
+	SnapshotsService() SnapshotsCommunicator
 	SpacesService() SpacesCommunicator
 }
 
@@ -89,6 +92,7 @@ type Client struct {
 	jobsService         JobsCommunicator
 	chartsService       ChartsCommunicator
 	measurementsService MeasurementsCommunicator
+	snapshotsService    SnapshotsCommunicator
 	spacesService       SpacesCommunicator
 	servicesService     ServicesCommunicator
 
@@ -125,6 +129,7 @@ func NewClient(token string, opts ...func(*Client) error) *Client {
 	c.jobsService = NewJobsService(c)
 	c.measurementsService = NewMeasurementsService(c)
 	c.servicesService = NewServiceService(c)
+	c.snapshotsService = NewSnapshotsService(c)
 	c.spacesService = NewSpacesService(c)
 
 	for _, opt := range opts {
@@ -219,6 +224,11 @@ func (c *Client) SpacesService() SpacesCommunicator {
 // ChartsService represents the subset of the API that deals with Charts
 func (c *Client) ChartsService() ChartsCommunicator {
 	return c.chartsService
+}
+
+// SnapshotsService represents the subset of the API that deals with Snapshots
+func (c *Client) SnapshotsService() SnapshotsCommunicator {
+	return c.snapshotsService
 }
 
 // ServicesService represents the subset of the API that deals with Services
