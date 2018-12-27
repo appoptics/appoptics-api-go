@@ -1,44 +1,37 @@
 package appoptics
 
 import (
-	"math/rand"
-	"os"
 	"time"
 
 	log "github.com/sirupsen/logrus"
 )
 
 const (
-	outputMeasurementsIntervalSeconds = 15
-	outputMeasurementsInterval        = outputMeasurementsIntervalSeconds * time.Second
-	maxRetries                        = 3
-	maxMeasurementsPerBatch           = 1000
+	maxMeasurementsPerBatch = 1000
 )
 
 // Reporter provides a way to persist data from a set collection of Aggregators and Counters at a regular interval
 type Reporter struct {
-	measurementSet   *MeasurementSet
-	measurementsComm MeasurementsCommunicator
-	prefix           string
-
-	batchChan             chan *MeasurementsBatch
-	measurementSetReports chan *MeasurementSetReport
-
-	globalTags map[string]string
+	*ReporterOpts
+	batchChan   chan *MeasurementsBatch
+	stopChan    chan struct{}
+	stoppedChan chan struct{}
 }
 
 // NewReporter returns a reporter for a given MeasurementSet, providing a way to sync metric information
 // to AppOptics for a collection of running metrics.
-func NewReporter(measurementSet *MeasurementSet, communicator MeasurementsCommunicator, prefix string) *Reporter {
-	r := &Reporter{
-		measurementSet:        measurementSet,
-		measurementsComm:      communicator,
-		prefix:                prefix,
-		batchChan:             make(chan *MeasurementsBatch, 100),
-		measurementSetReports: make(chan *MeasurementSetReport, 1000),
+func NewReporter(optFns ...ReporterOptsFn) *Reporter {
+	opts := &ReporterOpts{}
+	*opts = defaultReporterOpts
+	for _, optFn := range optFns {
+		optFn(opts)
 	}
-	r.initGlobalTags()
-	return r
+	return &Reporter{
+		ReporterOpts: opts,
+		batchChan:    make(chan *MeasurementsBatch, 10),
+		stopChan:     make(chan struct{}, 1),
+		stoppedChan:  make(chan struct{}),
+	}
 }
 
 // Start kicks off two goroutines that help batch and report metrics measurements to AppOptics.
@@ -47,17 +40,20 @@ func (r *Reporter) Start() {
 	go r.flushReportsForever()
 }
 
-func (r *Reporter) initGlobalTags() {
-	hostname, err := os.Hostname()
-	if err != nil {
-		hostname = "na"
+// Close forces an immediate flush of the metrics and stops further reporting.
+func (r *Reporter) Close() error {
+	// Notify the flushReportsForever worker that it should exit.
+	select {
+	case r.stopChan <- struct{}{}:
+	default:
 	}
-	r.globalTags = map[string]string{
-		"hostname": hostname + os.Getenv("HOST_SUFFIX"),
-	}
+	// Wait until the flushReportsForever and postMeasurementBatches workers exit
+	<-r.stoppedChan
+	return nil
 }
 
 func (r *Reporter) postMeasurementBatches() {
+	defer close(r.stoppedChan)
 	for batch := range r.batchChan {
 		tryCount := 0
 		for {
@@ -67,7 +63,7 @@ func (r *Reporter) postMeasurementBatches() {
 				break
 			}
 			tryCount++
-			aborting := tryCount == maxRetries
+			aborting := tryCount == r.maxPostRetries
 			log.Error("Error uploading AppOptics measurements batch", "err", err, "tryCount", tryCount, "aborting", aborting)
 			if aborting {
 				break
@@ -76,14 +72,12 @@ func (r *Reporter) postMeasurementBatches() {
 	}
 }
 
-func (r *Reporter) flushReport(report *MeasurementSetReport) {
-	batchTimeUnixSecs := (time.Now().Unix() / outputMeasurementsIntervalSeconds) * outputMeasurementsIntervalSeconds
-
+func (r *Reporter) flushReport(report *MeasurementSetReport, reportTime time.Time) {
 	var batch *MeasurementsBatch
 	resetBatch := func() {
 		batch = &MeasurementsBatch{
-			Time:   batchTimeUnixSecs,
-			Period: outputMeasurementsIntervalSeconds,
+			Time:   reportTime.Unix(),
+			Period: int64(r.period / time.Second),
 		}
 	}
 	flushBatch := func() {
@@ -91,15 +85,14 @@ func (r *Reporter) flushReport(report *MeasurementSetReport) {
 	}
 	addMeasurement := func(measurement Measurement) {
 		batch.Measurements = append(batch.Measurements, measurement)
-		// AppOptics API docs advise sending very large numbers of metrics in multiple HTTP requests; so we'll flush
-		// batches of 500 measurements at a time.
+		// AppOptics API docs advise sending very large numbers of metrics in multiple HTTP requests; so we'll limit each
+		// request to a batch of 1000 measurements.
 		if len(batch.Measurements) >= maxMeasurementsPerBatch {
 			flushBatch()
 			resetBatch()
 		}
 	}
 	resetBatch()
-	report.Counts["num_measurements"] = int64(len(report.Counts)) + int64(len(report.Aggregators)) + 1
 	for key, value := range report.Counts {
 		metricName, tags := parseMeasurementKey(key)
 		m := Measurement{
@@ -141,15 +134,21 @@ func (r *Reporter) flushReport(report *MeasurementSetReport) {
 }
 
 func (r *Reporter) flushReportsForever() {
-	// Sleep for a random duration between 0 and outputMeasurementsInterval in order to randomize the counters output cycle.
-	time.Sleep(time.Duration(rand.Int63n(int64(outputMeasurementsInterval))))
-	report := r.measurementSet.Reset()
-	r.flushReport(report)
-	// After the initial random sleep, start a regular interval timer. This will output measurements at a consistent time
-	// modulo outputMeasurementsInterval.
-	for range time.Tick(outputMeasurementsInterval) {
+	defer close(r.batchChan)
+	shutdown := false
+	for !shutdown {
+		// Sleep until the beginning of the next reporting period.
+		now := time.Now()
+		nextInterval := now.Truncate(r.period).Add(r.period)
+		select {
+		case <-time.After(nextInterval.Sub(now)):
+		case <-r.stopChan:
+			shutdown = true
+		}
 		report := r.measurementSet.Reset()
-		r.flushReport(report)
+		if len(report.Aggregators) > 0 || len(report.Counts) > 0 {
+			r.flushReport(report, nextInterval)
+		}
 	}
 }
 
