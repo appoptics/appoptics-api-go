@@ -2,7 +2,7 @@ package appoptics
 
 import "fmt"
 
-// Metric represents a Librato Metric.
+// Metric is an AppOptics Metric
 type Metric struct {
 	Name        string           `json:"name"`
 	Description string           `json:"description,omitempty"`
@@ -13,9 +13,9 @@ type Metric struct {
 	Attributes  MetricAttributes `json:"attributes,omitempty"`
 }
 
-// MetricAttributes are named attributes as key:value pairs.
+// MetricAttributes are key/value pairs of metadata about the Metric
 type MetricAttributes struct {
-	Color             *string     `json:"color,omitempty"`
+	Color             string      `json:"color,omitempty"`
 	DisplayMax        interface{} `json:"display_max,omitempty"`
 	DisplayMin        interface{} `json:"display_min,omitempty"`
 	DisplayUnitsLong  string      `json:"display_units_long,omitempty"`
@@ -33,6 +33,12 @@ type MetricsResponse struct {
 
 type MetricsService struct {
 	client *Client
+}
+
+// MetricUpdatePayload will apply the state represented by Attributes to the Metrics identified by Names
+type MetricUpdatePayload struct {
+	Names      []string         `json:"names"`
+	Attributes MetricAttributes `json:"attributes"`
 }
 
 type MetricsCommunicator interface {
@@ -98,8 +104,20 @@ func (ms *MetricsService) Create(m *Metric) (*Metric, error) {
 	return createdMetric, nil
 }
 
-func (ms *MetricsService) Update(m *Metric) (*MetricsResponse, error) {
-	return nil, nil
+func (ms *MetricsService) Update(mas *MetricAttributes) error {
+	req, err := ms.client.NewRequest("PUT", "metrics", mas)
+
+	if err != nil {
+		return err
+	}
+
+	_, err = ms.client.Do(req, nil)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (ms *MetricsService) Delete(name string) error {
