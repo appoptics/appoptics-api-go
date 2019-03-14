@@ -53,6 +53,7 @@ type ServiceAccessor interface {
 	ChartsService() ChartsCommunicator
 	JobsService() JobsCommunicator
 	MeasurementsService() MeasurementsCommunicator
+	MetricsService() MetricsCommunicator
 	ServicesService() ServicesCommunicator
 	SnapshotsService() SnapshotsCommunicator
 	SpacesService() SpacesCommunicator
@@ -128,6 +129,7 @@ func NewClient(token string, opts ...func(*Client) error) *Client {
 	c.chartsService = NewChartsService(c)
 	c.jobsService = NewJobsService(c)
 	c.measurementsService = NewMeasurementsService(c)
+	c.metricsService = NewMetricsService(c)
 	c.servicesService = NewServiceService(c)
 	c.snapshotsService = NewSnapshotsService(c)
 	c.spacesService = NewSpacesService(c)
@@ -224,6 +226,16 @@ func (c *Client) SpacesService() SpacesCommunicator {
 // ChartsService represents the subset of the API that deals with Charts
 func (c *Client) ChartsService() ChartsCommunicator {
 	return c.chartsService
+}
+
+// MeasurementsService represents the subset of the API that deals with Measurements
+func (c *Client) MeasurementsService() MeasurementsCommunicator {
+	return c.measurementsService
+}
+
+// MetricsService represents the subset of the API that deals with Metrics
+func (c *Client) MetricsService() MetricsCommunicator {
+	return c.metricsService
 }
 
 // SnapshotsService represents the subset of the API that deals with Snapshots
