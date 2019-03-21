@@ -45,8 +45,8 @@ type MetricsCommunicator interface {
 	List() (*MetricsResponse, error)
 	Retrieve(string) (*Metric, error)
 	Create(*Metric) (*Metric, error)
-	Update(*Metric) (*Metric, error)
-	Delete(int) error
+	Update(*MetricAttributes) error
+	Delete(string) error
 }
 
 func NewMetricsService(c *Client) *MetricsService {

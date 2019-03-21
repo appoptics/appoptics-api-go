@@ -83,20 +83,17 @@ type ParamErrorMessage []map[string]string
 
 // Client implements ServiceAccessor
 type Client struct {
-	baseURL    *url.URL
-	httpClient httpClient
-	token      string
-
-	alertsService       AlertsCommunicator
-	annotationsService  AnnotationsCommunicator
-	apiTokensService    ApiTokensCommunicator
-	jobsService         JobsCommunicator
-	chartsService       ChartsCommunicator
-	measurementsService MeasurementsCommunicator
-	snapshotsService    SnapshotsCommunicator
-	spacesService       SpacesCommunicator
-	servicesService     ServicesCommunicator
-
+	baseURL                 *url.URL
+	httpClient              httpClient
+	token                   string
+	alertsService           AlertsCommunicator
+	annotationsService      AnnotationsCommunicator
+	apiTokensService        ApiTokensCommunicator
+	chartsService           ChartsCommunicator
+	measurementsService     MeasurementsCommunicator
+	metricsService          MetricsCommunicator
+	spacesService           SpacesCommunicator
+	servicesService         ServicesCommunicator
 	callerUserAgentFragment string
 }
 
