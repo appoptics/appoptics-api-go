@@ -39,6 +39,11 @@ func NewServerTestMux() *mux.Router {
 	// Measurements
 
 	// Metrics
+	router.Handle("/v1/metrics", ListMetricsHandler()).Methods("GET")
+	router.Handle("/v1/metrics/{name}", CreateMetricHandler()).Methods("PUT")
+	router.Handle("/v1/metrics/{name}", RetrieveMetricHandler()).Methods("GET")
+	router.Handle("/v1/metrics", UpdateMetricHandler()).Methods("PUT")
+	router.Handle("/v1/metrics/", DeleteMetricHandler()).Methods("DELETE")
 
 	// Spaces
 	router.Handle("/v1/spaces", ListSpacesHandler()).Methods("GET")
