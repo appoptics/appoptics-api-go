@@ -9,10 +9,7 @@ import (
 
 func TestApiTokensService_List(t *testing.T) {
 	apiTokenResponse, err := client.ApiTokensService().List()
-	if err != nil {
-		t.Errorf("error running List: %v", err)
-	}
-
+	assert.Nil(t, err)
 	query := apiTokenResponse.Query
 	firstToken := apiTokenResponse.ApiTokens[0]
 
@@ -30,10 +27,7 @@ func TestApiTokensService_List(t *testing.T) {
 
 func TestApiTokensService_Create(t *testing.T) {
 	apiToken, err := client.ApiTokensService().Create(&appoptics.ApiToken{})
-	if err != nil {
-		t.Errorf("error running Create: %v", err)
-	}
-
+	assert.Nil(t, err)
 	assert.Equal(t, "My New Token", *apiToken.Name)
 	assert.Equal(t, "24f9fb2134399595b91da1dcac39cb6eafc68a07fa08ad3d70892b7aad10e1cf", *apiToken.Token)
 	assert.Equal(t, true, *apiToken.Active)
@@ -42,6 +36,7 @@ func TestApiTokensService_Create(t *testing.T) {
 
 func TestApiTokensService_Retrieve(t *testing.T) {
 	apiTokenResponse, err := client.ApiTokensService().Retrieve("foobar")
+	assert.Nil(t, err)
 
 	query := apiTokenResponse.Query
 	firstToken := apiTokenResponse.ApiTokens[0]
@@ -64,11 +59,7 @@ func TestApiTokensService_Retrieve(t *testing.T) {
 
 func TestApiTokensService_Update(t *testing.T) {
 	apiToken, err := client.ApiTokensService().Update(&appoptics.ApiToken{})
-
-	if err != nil {
-		t.Errorf("error running Status: %v", err)
-	}
-
+	assert.Nil(t, err)
 	assert.Equal(t, "New Token Name", *apiToken.Name)
 	assert.Equal(t, "24f9fb2134399595b91da1dcac39cb6eafc68a07fa08ad3d70892b7aad10e1cf", *apiToken.Token)
 	assert.Equal(t, false, *apiToken.Active)

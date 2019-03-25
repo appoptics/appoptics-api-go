@@ -53,6 +53,7 @@ type ServiceAccessor interface {
 	ChartsService() ChartsCommunicator
 	JobsService() JobsCommunicator
 	MeasurementsService() MeasurementsCommunicator
+	MetricsService() MetricsCommunicator
 	ServicesService() ServicesCommunicator
 	SnapshotsService() SnapshotsCommunicator
 	SpacesService() SpacesCommunicator
@@ -82,20 +83,19 @@ type ParamErrorMessage []map[string]string
 
 // Client implements ServiceAccessor
 type Client struct {
-	baseURL    *url.URL
-	httpClient httpClient
-	token      string
-
-	alertsService       AlertsCommunicator
-	annotationsService  AnnotationsCommunicator
-	apiTokensService    ApiTokensCommunicator
-	jobsService         JobsCommunicator
-	chartsService       ChartsCommunicator
-	measurementsService MeasurementsCommunicator
-	snapshotsService    SnapshotsCommunicator
-	spacesService       SpacesCommunicator
-	servicesService     ServicesCommunicator
-
+	baseURL                 *url.URL
+	httpClient              httpClient
+	token                   string
+	alertsService           AlertsCommunicator
+	annotationsService      AnnotationsCommunicator
+	apiTokensService        ApiTokensCommunicator
+	chartsService           ChartsCommunicator
+	jobsService             JobsCommunicator
+	measurementsService     MeasurementsCommunicator
+	metricsService          MetricsCommunicator
+	spacesService           SpacesCommunicator
+	snapshotsService        SnapshotsCommunicator
+	servicesService         ServicesCommunicator
 	callerUserAgentFragment string
 }
 
@@ -128,6 +128,7 @@ func NewClient(token string, opts ...func(*Client) error) *Client {
 	c.chartsService = NewChartsService(c)
 	c.jobsService = NewJobsService(c)
 	c.measurementsService = NewMeasurementsService(c)
+	c.metricsService = NewMetricsService(c)
 	c.servicesService = NewServiceService(c)
 	c.snapshotsService = NewSnapshotsService(c)
 	c.spacesService = NewSpacesService(c)
@@ -206,6 +207,11 @@ func (c *Client) ApiTokensService() ApiTokensCommunicator {
 	return c.apiTokensService
 }
 
+// ChartsService represents the subset of the API that deals with Charts
+func (c *Client) ChartsService() ChartsCommunicator {
+	return c.chartsService
+}
+
 // JobsService represents the subset of the API that deals with Jobs
 func (c *Client) JobsService() JobsCommunicator {
 	return c.jobsService
@@ -216,14 +222,14 @@ func (c *Client) MeasurementsService() MeasurementsCommunicator {
 	return c.measurementsService
 }
 
-// SpacesService represents the subset of the API that deals with Spaces
-func (c *Client) SpacesService() SpacesCommunicator {
-	return c.spacesService
+// MetricsService represents the subset of the API that deals with Metrics
+func (c *Client) MetricsService() MetricsCommunicator {
+	return c.metricsService
 }
 
-// ChartsService represents the subset of the API that deals with Charts
-func (c *Client) ChartsService() ChartsCommunicator {
-	return c.chartsService
+// ServicesService represents the subset of the API that deals with Services
+func (c *Client) ServicesService() ServicesCommunicator {
+	return c.servicesService
 }
 
 // SnapshotsService represents the subset of the API that deals with Snapshots
@@ -231,9 +237,9 @@ func (c *Client) SnapshotsService() SnapshotsCommunicator {
 	return c.snapshotsService
 }
 
-// ServicesService represents the subset of the API that deals with Services
-func (c *Client) ServicesService() ServicesCommunicator {
-	return c.servicesService
+// SpacesService represents the subset of the API that deals with Spaces
+func (c *Client) SpacesService() SpacesCommunicator {
+	return c.spacesService
 }
 
 // Error makes ErrorResponse satisfy the error interface and can be used to serialize error responses back to the httpClient
@@ -282,14 +288,20 @@ func clientVersionString() string {
 	return fmt.Sprintf("%s-v%s", clientIdentifier, Version())
 }
 
-// checkError creates an ErrorResponse from the http.Response.Body
+// checkError creates an ErrorResponse from the http.Response.Body, if there is one
 func checkError(resp *http.Response) error {
 	var errResponse ErrorResponse
 	if resp.StatusCode >= 400 {
-		dec := json.NewDecoder(resp.Body)
-		dec.Decode(&errResponse)
-		log.Printf("error: %+v\n", errResponse)
-		return &errResponse
+		if resp.ContentLength > 0 {
+			decoder := json.NewDecoder(resp.Body)
+			err := decoder.Decode(errResponse)
+
+			if err != nil {
+				return err
+			}
+			log.Debugf("error: %+v\n", errResponse)
+			return &errResponse
+		}
 	}
 	return nil
 }
