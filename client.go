@@ -90,9 +90,11 @@ type Client struct {
 	annotationsService      AnnotationsCommunicator
 	apiTokensService        ApiTokensCommunicator
 	chartsService           ChartsCommunicator
+	jobsService             JobsCommunicator
 	measurementsService     MeasurementsCommunicator
 	metricsService          MetricsCommunicator
 	spacesService           SpacesCommunicator
+	snapshotsService        SnapshotsCommunicator
 	servicesService         ServicesCommunicator
 	callerUserAgentFragment string
 }
@@ -205,24 +207,14 @@ func (c *Client) ApiTokensService() ApiTokensCommunicator {
 	return c.apiTokensService
 }
 
-// JobsService represents the subset of the API that deals with Jobs
-func (c *Client) JobsService() JobsCommunicator {
-	return c.jobsService
-}
-
-// MeasurementsService represents the subset of the API that deals with Measurements
-func (c *Client) MeasurementsService() MeasurementsCommunicator {
-	return c.measurementsService
-}
-
-// SpacesService represents the subset of the API that deals with Spaces
-func (c *Client) SpacesService() SpacesCommunicator {
-	return c.spacesService
-}
-
 // ChartsService represents the subset of the API that deals with Charts
 func (c *Client) ChartsService() ChartsCommunicator {
 	return c.chartsService
+}
+
+// JobsService represents the subset of the API that deals with Jobs
+func (c *Client) JobsService() JobsCommunicator {
+	return c.jobsService
 }
 
 // MeasurementsService represents the subset of the API that deals with Measurements
@@ -235,14 +227,19 @@ func (c *Client) MetricsService() MetricsCommunicator {
 	return c.metricsService
 }
 
+// ServicesService represents the subset of the API that deals with Services
+func (c *Client) ServicesService() ServicesCommunicator {
+	return c.servicesService
+}
+
 // SnapshotsService represents the subset of the API that deals with Snapshots
 func (c *Client) SnapshotsService() SnapshotsCommunicator {
 	return c.snapshotsService
 }
 
-// ServicesService represents the subset of the API that deals with Services
-func (c *Client) ServicesService() ServicesCommunicator {
-	return c.servicesService
+// SpacesService represents the subset of the API that deals with Spaces
+func (c *Client) SpacesService() SpacesCommunicator {
+	return c.spacesService
 }
 
 // Error makes ErrorResponse satisfy the error interface and can be used to serialize error responses back to the httpClient
