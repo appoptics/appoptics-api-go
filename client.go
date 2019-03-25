@@ -291,14 +291,20 @@ func clientVersionString() string {
 	return fmt.Sprintf("%s-v%s", clientIdentifier, Version())
 }
 
-// checkError creates an ErrorResponse from the http.Response.Body
+// checkError creates an ErrorResponse from the http.Response.Body, if there is one
 func checkError(resp *http.Response) error {
 	var errResponse ErrorResponse
 	if resp.StatusCode >= 400 {
-		dec := json.NewDecoder(resp.Body)
-		dec.Decode(&errResponse)
-		log.Printf("error: %+v\n", errResponse)
-		return &errResponse
+		if resp.ContentLength > 0 {
+			decoder := json.NewDecoder(resp.Body)
+			err := decoder.Decode(errResponse)
+
+			if err != nil {
+				return err
+			}
+			log.Debugf("error: %+v\n", errResponse)
+			return &errResponse
+		}
 	}
 	return nil
 }
