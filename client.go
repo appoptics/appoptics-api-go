@@ -13,6 +13,8 @@ import (
 
 	"time"
 
+	"io/ioutil"
+
 	log "github.com/sirupsen/logrus"
 )
 
@@ -97,6 +99,7 @@ type Client struct {
 	snapshotsService        SnapshotsCommunicator
 	servicesService         ServicesCommunicator
 	callerUserAgentFragment string
+	debugMode               bool
 }
 
 // httpClient defines the http.Client method used by Client.
@@ -193,6 +196,14 @@ func BaseURLClientOption(urlString string) ClientOption {
 	}
 }
 
+// SetDebugMode sets the debugMode struct member to true
+func SetDebugMode() ClientOption {
+	return func(c *Client) error {
+		c.debugMode = true
+		return nil
+	}
+}
+
 // AlertsService represents the subset of the API that deals with Alerts
 func (c *Client) AlertsService() AlertsCommunicator {
 	return c.alertsService
@@ -262,6 +273,8 @@ func (c *Client) Do(req *http.Request, respData interface{}) (*http.Response, er
 		return resp, err
 	}
 
+	dumpResponse(resp)
+
 	defer resp.Body.Close()
 	if respData != nil {
 		if writer, ok := respData.(io.Writer); ok {
@@ -308,10 +321,15 @@ func checkError(resp *http.Response) error {
 
 // dumpResponse is a debugging function which dumps the HTTP response to stdout
 func dumpResponse(resp *http.Response) {
-	buf := new(bytes.Buffer)
 	fmt.Printf("response status: %s\n", resp.Status)
-	if resp.Body != nil {
-		buf.ReadFrom(resp.Body)
-		fmt.Printf("response body: %s\n\n", string(buf.Bytes()))
+	if resp.ContentLength != 0 {
+		if respBytes, err := ioutil.ReadAll(resp.Body); err != nil {
+			log.Printf("Error reading body: %s", err)
+			return
+		} else {
+			resp.Body.Close()
+			resp.Body = ioutil.NopCloser(bytes.NewBuffer(respBytes)) // reset the original body with the read bytes
+			fmt.Printf("response body: %s\n\n", string(respBytes))
+		}
 	}
 }
