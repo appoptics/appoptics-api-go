@@ -1,16 +1,19 @@
 package integration_tests
 
 import (
-	"log"
 	"testing"
 
 	"os"
+
+	"log"
 
 	"github.com/appoptics/appoptics-api-go"
 )
 
 const (
-	TestPrefix = "iNtEgRaTiOnTEST"
+	TestPrefix        = "iNtEgRaTiOnTEST"
+	CreatedNameString = "created"
+	UpdatedNameString = "updated"
 )
 
 var (
@@ -22,8 +25,8 @@ func TestMain(m *testing.M) {
 	if token == "" {
 		log.Fatal("set APPOPTICS_TOKEN in the environment")
 	}
-	//client = appoptics.NewClient(token)
-	client = appoptics.NewClient(token, appoptics.SetDebugMode())
 
+	client = appoptics.NewClient(token)
+	//client = appoptics.NewClient(token, appoptics.SetDebugMode())
 	os.Exit(m.Run())
 }

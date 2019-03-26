@@ -59,7 +59,7 @@ func (s *SpacesService) Create(name string) (*Space, error) {
 	return createdSpace, nil
 }
 
-// List implements the  Spaces API's List command
+// List implements the Spaces API's List command
 func (s *SpacesService) List(rp *RequestParameters) ([]*Space, error) {
 	req, err := s.client.NewRequest("GET", "spaces", nil)
 

@@ -8,11 +8,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const (
-	CreatedNameString = "created"
-	UpdatedNameString = "updated"
-)
-
 func TestSpaces(t *testing.T) {
 	var spaceID int
 
@@ -27,6 +22,11 @@ func TestSpaces(t *testing.T) {
 		space, err := client.SpacesService().Retrieve(spaceID)
 		require.Nil(t, err)
 		assert.Equal(t, spaceName(CreatedNameString), space.Name)
+	})
+
+	t.Run("List", func(t *testing.T) {
+		_, err := client.SpacesService().List(client.DefaultRequestParameters(5))
+		require.Nil(t, err)
 	})
 
 	t.Run("Update", func(t *testing.T) {

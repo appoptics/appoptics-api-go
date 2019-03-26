@@ -259,6 +259,14 @@ func (e *ErrorResponse) Error() string {
 	return string(errorData)
 }
 
+// DefaultRequestParameters provides a *RequestParameters with minimum required fields
+func (c *Client) DefaultRequestParameters(length int) *RequestParameters {
+	return &RequestParameters{
+		Length: length,
+		Sort:   "asc",
+	}
+}
+
 // Do performs the HTTP request on the wire, taking an optional second parameter for containing a response
 func (c *Client) Do(req *http.Request, respData interface{}) (*http.Response, error) {
 	resp, err := c.httpClient.Do(req)
@@ -273,7 +281,9 @@ func (c *Client) Do(req *http.Request, respData interface{}) (*http.Response, er
 		return resp, err
 	}
 
-	dumpResponse(resp)
+	if c.debugMode {
+		dumpResponse(resp)
+	}
 
 	defer resp.Body.Close()
 	if respData != nil {
@@ -328,7 +338,7 @@ func dumpResponse(resp *http.Response) {
 			return
 		} else {
 			resp.Body.Close()
-			resp.Body = ioutil.NopCloser(bytes.NewBuffer(respBytes)) // reset the original body with the read bytes
+			resp.Body = ioutil.NopCloser(bytes.NewBuffer(respBytes))
 			fmt.Printf("response body: %s\n\n", string(respBytes))
 		}
 	}
