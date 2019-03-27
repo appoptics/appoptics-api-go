@@ -45,7 +45,7 @@ type MetricsCommunicator interface {
 	List() (*MetricsResponse, error)
 	Retrieve(string) (*Metric, error)
 	Create(*Metric) (*Metric, error)
-	Update(*MetricAttributes) error
+	Update(string, *Metric) error
 	Delete(string) error
 }
 
@@ -53,6 +53,7 @@ func NewMetricsService(c *Client) *MetricsService {
 	return &MetricsService{c}
 }
 
+// List lists the Metrics in the organization identified by the AppOptics token
 func (ms *MetricsService) List() (*MetricsResponse, error) {
 	req, err := ms.client.NewRequest("GET", "metrics", nil)
 	if err != nil {
@@ -70,6 +71,7 @@ func (ms *MetricsService) List() (*MetricsResponse, error) {
 	return metricsResponse, nil
 }
 
+// Retrieve fetches the Metric identified by the given name
 func (ms *MetricsService) Retrieve(name string) (*Metric, error) {
 	metric := &Metric{}
 	path := fmt.Sprintf("metrics/%s", name)
@@ -87,6 +89,7 @@ func (ms *MetricsService) Retrieve(name string) (*Metric, error) {
 	return metric, nil
 }
 
+// Create creates the Metric in the organization identified by the AppOptics token
 func (ms *MetricsService) Create(m *Metric) (*Metric, error) {
 	path := fmt.Sprintf("metrics/%s", m.Name)
 	req, err := ms.client.NewRequest("PUT", path, m)
@@ -104,8 +107,10 @@ func (ms *MetricsService) Create(m *Metric) (*Metric, error) {
 	return createdMetric, nil
 }
 
-func (ms *MetricsService) Update(mas *MetricAttributes) error {
-	req, err := ms.client.NewRequest("PUT", "metrics", mas)
+// Update updates the Metric with the given name, setting it to match the Metric pointer argument
+func (ms *MetricsService) Update(originalName string, m *Metric) error {
+	path := fmt.Sprintf("metrics/%s", originalName)
+	req, err := ms.client.NewRequest("PUT", path, m)
 
 	if err != nil {
 		return err
@@ -120,6 +125,7 @@ func (ms *MetricsService) Update(mas *MetricAttributes) error {
 	return nil
 }
 
+// Delete deletes the Metric matching the name argument
 func (ms *MetricsService) Delete(name string) error {
 	path := fmt.Sprintf("metrics/%s", name)
 	req, err := ms.client.NewRequest("DELETE", path, nil)
