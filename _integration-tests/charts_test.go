@@ -17,6 +17,8 @@ func TestCharts(t *testing.T) {
 	require.Nil(t, err)
 	spaceID = space.ID
 
+	defer client.SpacesService().Delete(spaceID)
+
 	t.Run("Create", func(t *testing.T) {
 		chart, err := client.ChartsService().Create(chartFixture("test"), spaceID)
 		require.Nil(t, err)
