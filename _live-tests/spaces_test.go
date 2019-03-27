@@ -1,4 +1,4 @@
-package integration_tests
+package live_tests
 
 import (
 	"fmt"
@@ -7,6 +7,12 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+//
+//
+// THESE TESTS PRODUCE LIVE DATA IN APPOPTICS - ORDER MATTERS HERE!
+//
+//
 
 func TestSpaces(t *testing.T) {
 	var spaceID int
