@@ -3,10 +3,10 @@ package appoptics
 import "fmt"
 
 type Service struct {
-	ID       *int               `json:"id,omitempty"`
-	Type     *string            `json:"type,omitempty"`
-	Settings *map[string]string `json:"settings,omitempty"`
-	Title    *string            `json:"title,omitempty"`
+	ID       int               `json:"id,omitempty"`
+	Type     string            `json:"type,omitempty"`
+	Settings map[string]string `json:"settings,omitempty"`
+	Title    string            `json:"title,omitempty"`
 }
 
 type ServicesCommunicator interface {
@@ -84,7 +84,7 @@ func (ss *ServicesService) Create(s *Service) (*Service, error) {
 
 // Update updates the Service
 func (ss *ServicesService) Update(s *Service) error {
-	path := fmt.Sprintf("services/%d", *s.ID)
+	path := fmt.Sprintf("services/%d", s.ID)
 	req, err := ss.client.NewRequest("PUT", path, s)
 	if err != nil {
 		return err
