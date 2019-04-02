@@ -3,8 +3,8 @@ package live_tests
 import (
 	"testing"
 
-	"github.com/appoptics/appoptics-api-go"
-	"github.com/magiconair/properties/assert"
+	appoptics "github.com/appoptics/appoptics-api-go"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -18,10 +18,11 @@ func TestServices(t *testing.T) {
 	var (
 		service *appoptics.Service
 	)
+
 	t.Run("Create", func(t *testing.T) {
-		createdService, err := client.ServicesService().Create(validService("test"))
+		createdService, err := client.ServicesService().Create(testService("test"))
 		require.Nil(t, err)
-		assert.Equal(t, validService("test").Title, createdService.Title)
+		assert.Equal(t, testService("test").Title, createdService.Title)
 		service = createdService
 	})
 
@@ -51,7 +52,7 @@ func TestServices(t *testing.T) {
 	})
 }
 
-func validService(title string) *appoptics.Service {
+func testService(title string) *appoptics.Service {
 	return &appoptics.Service{
 		Title: title,
 		Type:  "slack",

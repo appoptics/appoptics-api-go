@@ -3,6 +3,10 @@ package live_tests
 import (
 	"testing"
 
+	"fmt"
+
+	"time"
+
 	"github.com/appoptics/appoptics-api-go"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -25,12 +29,15 @@ func TestCharts(t *testing.T) {
 	require.Nil(t, err)
 	spaceID = space.ID
 
+	time.Sleep(4 * time.Second) // account for potential replica lag
+
 	defer client.SpacesService().Delete(spaceID)
 
 	t.Run("Create", func(t *testing.T) {
-		chart, err := client.ChartsService().Create(chartFixture("test"), spaceID)
+		createdChart, err := client.ChartsService().Create(chartFixture("test"), spaceID)
 		require.Nil(t, err)
-		require.Equal(t, chartFixture("test").Name, chart.Name)
+		require.Equal(t, chartFixture("test").Name, createdChart.Name)
+		chart = createdChart
 		chartID = chart.ID
 	})
 
@@ -42,12 +49,13 @@ func TestCharts(t *testing.T) {
 	})
 
 	t.Run("Retrieve", func(t *testing.T) {
-		chart, err = client.ChartsService().Retrieve(chartID, spaceID)
+		retrievedChart, err := client.ChartsService().Retrieve(chartID, spaceID)
 		require.Nil(t, err)
-		assert.Equal(t, chartFixture("test").Name, chart.Name)
+		assert.Equal(t, chart.Name, retrievedChart.Name)
 	})
 
 	t.Run("Update", func(t *testing.T) {
+		fmt.Printf("UPDATE CHART: %+v\n", chart)
 		otherName := "new-name"
 		chart.Name = otherName
 		updatedChart, err := client.ChartsService().Update(chart, spaceID)
@@ -59,6 +67,7 @@ func TestCharts(t *testing.T) {
 		err := client.ChartsService().Delete(chartID, spaceID)
 		require.Nil(t, err)
 	})
+
 }
 
 func chartFixture(name string) *appoptics.Chart {

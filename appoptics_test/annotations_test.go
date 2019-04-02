@@ -95,8 +95,3 @@ func TestAnnotationsService_UpdateEvent(t *testing.T) {
 	assert.Equal(t, "github", annResponse.Rel)
 	assert.Equal(t, "https://github.com/acme/app/commits/01beaf", annResponse.Href)
 }
-
-func TestAnnotationsService_Delete(t *testing.T) {
-	err := client.AnnotationsService().Delete("foo")
-	require.Nil(t, err)
-}

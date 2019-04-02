@@ -8,10 +8,10 @@ import (
 
 // Tag represents an AppOptics Tag, used in Measurements, Charts, etc
 type Tag struct {
-	Name    *string   `json:"name,omitempty"`
-	Values  []*string `json:"values,omitempty"`
-	Grouped *bool     `json:"grouped,omitempty"`
-	Dynamic *bool     `json:"dynamic,omitempty"`
+	Name    string   `json:"name,omitempty"`
+	Values  []string `json:"values,omitempty"`
+	Grouped bool     `json:"grouped,omitempty"`
+	Dynamic bool     `json:"dynamic,omitempty"`
 }
 
 func MetricWithTags(name string, tags map[string]interface{}) string {

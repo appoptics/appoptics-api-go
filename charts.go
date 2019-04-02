@@ -37,9 +37,9 @@ type Stream struct {
 }
 
 type Threshold struct {
-	Operator *string  `json:"operator,omitempty"`
-	Value    *float64 `json:"value,omitempty"`
-	Type     *string  `json:"type,omitempty"`
+	Operator string  `json:"operator,omitempty"`
+	Value    float64 `json:"value,omitempty"`
+	Type     string  `json:"type,omitempty"`
 }
 
 type ChartsCommunicator interface {

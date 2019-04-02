@@ -2,9 +2,10 @@ package appoptics
 
 import (
 	"fmt"
-	"github.com/magiconair/properties/assert"
 	"net/http"
 	"testing"
+
+	"github.com/magiconair/properties/assert"
 )
 
 func TestRequestParameters_AddToRequest_WithParams(t *testing.T) {
@@ -13,7 +14,7 @@ func TestRequestParameters_AddToRequest_WithParams(t *testing.T) {
 	sort := "desc"
 	req, _ := http.NewRequest("GET", baseUrl, nil)
 
-	rp := RequestParameters{
+	rp := PaginationParameters{
 		Offset:  10,
 		Length:  20,
 		Orderby: orderby,

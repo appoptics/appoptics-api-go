@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"testing"
 
+	"time"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -25,13 +27,14 @@ func TestSpaces(t *testing.T) {
 	})
 
 	t.Run("Retrieve", func(t *testing.T) {
+		time.Sleep(4 * time.Second) // account for potential replica lag
 		space, err := client.SpacesService().Retrieve(spaceID)
 		require.Nil(t, err)
 		assert.Equal(t, spaceName(CreatedNameString), space.Name)
 	})
 
 	t.Run("List", func(t *testing.T) {
-		_, err := client.SpacesService().List(client.DefaultRequestParameters(5))
+		_, err := client.SpacesService().List(client.DefaultPaginationParameters(5))
 		require.Nil(t, err)
 	})
 

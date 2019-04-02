@@ -18,15 +18,20 @@ import (
 
 func TestAlerts(t *testing.T) {
 	var (
-		alert  *appoptics.Alert
-		metric *appoptics.Metric
-		err    error
+		alert   *appoptics.Alert
+		metric  *appoptics.Metric
+		service *appoptics.Service
+		err     error
 	)
 
 	metric, err = client.MetricsService().Create(testMetric("test.alert"))
 	require.Nil(t, err)
 
+	service, err = client.ServicesService().Create(testService("test"))
+	require.Nil(t, err)
+
 	defer client.MetricsService().Delete(metric.Name)
+	defer client.ServicesService().Delete(service.ID)
 
 	t.Run("Create", func(t *testing.T) {
 		newAlert, err := client.AlertsService().Create(testAlert("test", metric.Name))
@@ -44,6 +49,16 @@ func TestAlerts(t *testing.T) {
 		fetchedAlert, err := client.AlertsService().Retrieve(alert.ID)
 		assert.Nil(t, err)
 		assert.Equal(t, alert.Name, fetchedAlert.Name)
+	})
+
+	t.Run("AssociateToService", func(t *testing.T) {
+		err := client.AlertsService().AssociateToService(alert.ID, service.ID)
+		assert.Nil(t, err)
+	})
+
+	t.Run("DisassociateFromService", func(t *testing.T) {
+		err := client.AlertsService().DisassociateFromService(alert.ID, service.ID)
+		assert.Nil(t, err)
 	})
 
 	t.Run("Update", func(t *testing.T) {

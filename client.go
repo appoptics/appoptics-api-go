@@ -259,11 +259,12 @@ func (e *ErrorResponse) Error() string {
 	return string(errorData)
 }
 
-// DefaultRequestParameters provides a *RequestParameters with minimum required fields
-func (c *Client) DefaultRequestParameters(length int) *RequestParameters {
-	return &RequestParameters{
-		Length: length,
-		Sort:   "asc",
+// DefaultPaginationParameters provides a *PaginationParameters with minimum required fields
+func (c *Client) DefaultPaginationParameters(length int) *PaginationParameters {
+	return &PaginationParameters{
+		Length:  length,
+		Sort:    "asc",
+		Orderby: "name",
 	}
 }
 
@@ -276,13 +277,12 @@ func (c *Client) Do(req *http.Request, respData interface{}) (*http.Response, er
 		return resp, err
 	}
 
+	if c.debugMode {
+		dumpResponse(resp)
+	}
 	// request response contains an error
 	if err = checkError(resp); err != nil {
 		return resp, err
-	}
-
-	if c.debugMode {
-		dumpResponse(resp)
 	}
 
 	defer resp.Body.Close()
@@ -313,9 +313,9 @@ func clientVersionString() string {
 
 // checkError creates an ErrorResponse from the http.Response.Body, if there is one
 func checkError(resp *http.Response) error {
-	var errResponse ErrorResponse
+	errResponse := &ErrorResponse{}
 	if resp.StatusCode >= 400 {
-		if resp.ContentLength > 0 {
+		if resp.ContentLength != 0 {
 			decoder := json.NewDecoder(resp.Body)
 			err := decoder.Decode(errResponse)
 
@@ -323,8 +323,10 @@ func checkError(resp *http.Response) error {
 				return err
 			}
 			log.Debugf("error: %+v\n", errResponse)
-			return &errResponse
+			return errResponse
 		}
+		msg := fmt.Sprintf("unknown error with status %d", resp.StatusCode)
+		return errors.New(msg)
 	}
 	return nil
 }

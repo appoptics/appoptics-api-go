@@ -1,11 +1,10 @@
 package live_tests
 
 import (
+	"log"
 	"testing"
 
 	"os"
-
-	"log"
 
 	"github.com/appoptics/appoptics-api-go"
 )
@@ -27,6 +26,7 @@ func TestMain(m *testing.M) {
 	}
 
 	client = appoptics.NewClient(token)
+	// Uncomment the below to see response status/body stdout while tests run
 	//client = appoptics.NewClient(token, appoptics.SetDebugMode())
 	os.Exit(m.Run())
 }
