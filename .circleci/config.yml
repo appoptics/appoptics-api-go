@@ -24,6 +24,12 @@ jobs:
       # TODO: move this into a containerized build
       - run: go get -u github.com/golang/dep/cmd/dep
       - run: dep ensure
-      - command: |
+      - run:
+        name: "Unit Tests"
+        command: |
+          make test
+      - run:
+        name: "Live Tests"
+        command: |
           export APPOPTICS_TOKEN=${APPOPTICS_TOKEN}
-      - run: make super_test
+          make live_test
