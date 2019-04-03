@@ -17,7 +17,7 @@ test:
 	go test -v $(excluding_vendor)
 
 live_test:
-	echo "$(APPOPTICS_TOKEN)" && cd _live-tests && go test -v
+	cd _live-tests && go test -v
 
 super_test: test
 super_test: live_test
