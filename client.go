@@ -13,6 +13,8 @@ import (
 
 	"time"
 
+	"io/ioutil"
+
 	log "github.com/sirupsen/logrus"
 )
 
@@ -97,6 +99,7 @@ type Client struct {
 	snapshotsService        SnapshotsCommunicator
 	servicesService         ServicesCommunicator
 	callerUserAgentFragment string
+	debugMode               bool
 }
 
 // httpClient defines the http.Client method used by Client.
@@ -193,6 +196,14 @@ func BaseURLClientOption(urlString string) ClientOption {
 	}
 }
 
+// SetDebugMode sets the debugMode struct member to true
+func SetDebugMode() ClientOption {
+	return func(c *Client) error {
+		c.debugMode = true
+		return nil
+	}
+}
+
 // AlertsService represents the subset of the API that deals with Alerts
 func (c *Client) AlertsService() AlertsCommunicator {
 	return c.alertsService
@@ -248,6 +259,15 @@ func (e *ErrorResponse) Error() string {
 	return string(errorData)
 }
 
+// DefaultPaginationParameters provides a *PaginationParameters with minimum required fields
+func (c *Client) DefaultPaginationParameters(length int) *PaginationParameters {
+	return &PaginationParameters{
+		Length:  length,
+		Sort:    "asc",
+		Orderby: "name",
+	}
+}
+
 // Do performs the HTTP request on the wire, taking an optional second parameter for containing a response
 func (c *Client) Do(req *http.Request, respData interface{}) (*http.Response, error) {
 	resp, err := c.httpClient.Do(req)
@@ -257,6 +277,9 @@ func (c *Client) Do(req *http.Request, respData interface{}) (*http.Response, er
 		return resp, err
 	}
 
+	if c.debugMode {
+		dumpResponse(resp)
+	}
 	// request response contains an error
 	if err = checkError(resp); err != nil {
 		return resp, err
@@ -290,9 +313,9 @@ func clientVersionString() string {
 
 // checkError creates an ErrorResponse from the http.Response.Body, if there is one
 func checkError(resp *http.Response) error {
-	var errResponse ErrorResponse
+	errResponse := &ErrorResponse{}
 	if resp.StatusCode >= 400 {
-		if resp.ContentLength > 0 {
+		if resp.ContentLength != 0 {
 			decoder := json.NewDecoder(resp.Body)
 			err := decoder.Decode(errResponse)
 
@@ -300,18 +323,25 @@ func checkError(resp *http.Response) error {
 				return err
 			}
 			log.Debugf("error: %+v\n", errResponse)
-			return &errResponse
+			return errResponse
 		}
+		msg := fmt.Sprintf("unknown error with status %d", resp.StatusCode)
+		return errors.New(msg)
 	}
 	return nil
 }
 
 // dumpResponse is a debugging function which dumps the HTTP response to stdout
 func dumpResponse(resp *http.Response) {
-	buf := new(bytes.Buffer)
 	fmt.Printf("response status: %s\n", resp.Status)
-	if resp.Body != nil {
-		buf.ReadFrom(resp.Body)
-		fmt.Printf("response body: %s\n\n", string(buf.Bytes()))
+	if resp.ContentLength != 0 {
+		if respBytes, err := ioutil.ReadAll(resp.Body); err != nil {
+			log.Printf("Error reading body: %s", err)
+			return
+		} else {
+			resp.Body.Close()
+			resp.Body = ioutil.NopCloser(bytes.NewBuffer(respBytes))
+			fmt.Printf("response body: %s\n\n", string(respBytes))
+		}
 	}
 }

@@ -27,9 +27,9 @@ type Space struct {
 // SpacesCommunicator defines the interface for the Spaces API
 type SpacesCommunicator interface {
 	Create(string) (*Space, error)
-	List(*RequestParameters) ([]*Space, error)
+	List(*PaginationParameters) ([]*Space, error)
 	Retrieve(int) (*RetrieveSpaceResponse, error)
-	Update(int, string) (*Space, error)
+	Update(int, string) error
 	Delete(int) error
 }
 
@@ -59,8 +59,8 @@ func (s *SpacesService) Create(name string) (*Space, error) {
 	return createdSpace, nil
 }
 
-// List implements the  Spaces API's List command
-func (s *SpacesService) List(rp *RequestParameters) ([]*Space, error) {
+// List implements the Spaces API's List command
+func (s *SpacesService) List(rp *PaginationParameters) ([]*Space, error) {
 	req, err := s.client.NewRequest("GET", "spaces", nil)
 
 	if err != nil {
@@ -101,23 +101,22 @@ func (s *SpacesService) Retrieve(id int) (*RetrieveSpaceResponse, error) {
 }
 
 // Update implements the Spaces API's Update command
-func (s *SpacesService) Update(id int, name string) (*Space, error) {
+func (s *SpacesService) Update(id int, name string) error {
 	requestedSpace := &Space{Name: name}
-	updatedSpace := &Space{}
 	spacePath := fmt.Sprintf("spaces/%d", id)
 	req, err := s.client.NewRequest("PUT", spacePath, requestedSpace)
 
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	_, err = s.client.Do(req, updatedSpace)
+	_, err = s.client.Do(req, nil)
 
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return updatedSpace, nil
+	return nil
 }
 
 // Delete implements the Spaces API's Delete command

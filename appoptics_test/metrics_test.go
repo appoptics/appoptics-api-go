@@ -58,15 +58,3 @@ func TestMetricsService_Retrieve(t *testing.T) {
 	assert.Equal(t, "cpu_temp", apiMetricsResponse.DisplayName)
 	assert.Equal(t, "gauge", apiMetricsResponse.Type)
 }
-
-// Yes, this test doesn't really do anything
-func TestMetricsService_Update(t *testing.T) {
-	err := client.MetricsService().Update(&appoptics.MetricAttributes{})
-	require.Nil(t, err)
-}
-
-// Yes, this test doesn't really do anything
-func TestMetricsService_Delete(t *testing.T) {
-	err := client.MetricsService().Delete("cpu.temp")
-	require.Nil(t, err)
-}

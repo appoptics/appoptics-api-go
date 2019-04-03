@@ -5,31 +5,31 @@ import (
 )
 
 type Alert struct {
-	ID           *int                   `json:"id,omitempty"`
-	Name         *string                `json:"name,omitempty"`
-	Description  *string                `json:"description,omitempty"`
-	Active       *bool                  `json:"active,omitempty"`
-	RearmSeconds *int                   `json:"rearm_seconds,omitempty"`
+	ID           int                    `json:"id,omitempty"`
+	Name         string                 `json:"name,omitempty"`
+	Description  string                 `json:"description,omitempty"`
+	Active       bool                   `json:"active,omitempty"`
+	RearmSeconds int                    `json:"rearm_seconds,omitempty"`
 	Conditions   []*AlertCondition      `json:"conditions,omitempty"`
 	Attributes   map[string]interface{} `json:"attributes,omitempty"`
 	Services     []*Service             `json:"services,omitempty"` // correspond to IDs of Service objects
-	CreatedAt    *int                   `json:"created_at,omitempty"`
-	UpdatedAt    *int                   `json:"updated_at,omitempty"`
+	CreatedAt    int                    `json:"created_at,omitempty"`
+	UpdatedAt    int                    `json:"updated_at,omitempty"`
 }
 
 type AlertCondition struct {
-	ID              *int     `json:"id,omitempty"`
-	Type            *string  `json:"type,omitempty"`
-	MetricName      *string  `json:"metric_name,omitempty"`
-	Threshold       *float64 `json:"threshold,omitempty"`
-	SummaryFunction *string  `json:"summary_function,omitempty"`
-	Duration        *int     `json:"duration,omitempty"`
-	Tags            []*Tag   `json:"tags,omitempty"`
+	ID              int     `json:"id,omitempty"`
+	Type            string  `json:"type,omitempty"`
+	MetricName      string  `json:"metric_name,omitempty"`
+	Threshold       float64 `json:"threshold,omitempty"`
+	SummaryFunction string  `json:"summary_function,omitempty"`
+	Duration        int     `json:"duration,omitempty"`
+	Tags            []*Tag  `json:"tags,omitempty"`
 }
 
 type AlertStatus struct {
-	Alert  *Alert  `json:"alert,omitempty"`
-	Status *string `json:"status,omitempty"`
+	Alert  Alert  `json:"alert,omitempty"`
+	Status string `json:"status,omitempty"`
 }
 
 type AlertsResponse struct {
@@ -111,7 +111,7 @@ func (as *AlertsService) Create(a *Alert) (*Alert, error) {
 
 // Update updates the Alert
 func (as *AlertsService) Update(a *Alert) error {
-	path := fmt.Sprintf("alerts/%d", *a.ID)
+	path := fmt.Sprintf("alerts/%d", a.ID)
 	req, err := as.client.NewRequest("PUT", path, a)
 	if err != nil {
 		return err

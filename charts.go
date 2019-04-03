@@ -5,41 +5,41 @@ import (
 )
 
 type Chart struct {
-	ID           *int        `json:"id,omitempty"`
-	Name         *string     `json:"name,omitempty"`
-	Type         *string     `json:"type,omitempty"`
+	ID           int         `json:"id,omitempty"`
+	Name         string      `json:"name,omitempty"`
+	Type         string      `json:"type,omitempty"`
 	Streams      []Stream    `json:"streams,omitempty"`
-	Min          *float64    `json:"min,omitempty"`
-	Max          *float64    `json:"max,omitempty"`
-	Label        *string     `json:"label,omitempty"`
-	RelatedSpace *int        `json:"related_space,omitempty"`
+	Min          float64     `json:"min,omitempty"`
+	Max          float64     `json:"max,omitempty"`
+	Label        string      `json:"label,omitempty"`
+	RelatedSpace int         `json:"related_space,omitempty"`
 	Thresholds   []Threshold `json:"threshold,omitempty"`
 }
 
 type Stream struct {
-	ID                 *int    `json:"id,omitempty"`
-	Name               *string `json:"name,omitempty"`
-	Metric             *string `json:"metric,omitempty"`
-	Composite          *string `json:"composite,omitempty"`
-	Type               *string `json:"type,omitempty"`
-	Tags               []Tag   `json:"tags,omitempty"`
-	GroupFunction      *string `json:"group_function,omitempty"` // valid: average, sum, min, max
-	GroupBy            *string `json:"group_by,omitempty"`
-	SummaryFunction    *string `json:"summary_function,omitempty"`    // valid: average, sum, min, max, count
-	DownsampleFunction *string `json:"downsample_function,omitempty"` // valid: average, min, max, sum, count
-	Color              *string `json:"color,omitempty"`
-	UnitsShort         *string `json:"units_short,omitempty"`
-	UnitsLong          *string `json:"units_long,omitempty"`
-	TransformFunction  *string `json:"transform_function,omitempty"`
-	Period             *int    `json:"period,omitempty"`
-	Min                *int    `json:"min,omitempty"`
-	Max                *int    `json:"max,omitempty"`
+	ID                 int    `json:"id,omitempty"`
+	Name               string `json:"name,omitempty"`
+	Metric             string `json:"metric,omitempty"`
+	Composite          string `json:"composite,omitempty"`
+	Type               string `json:"type,omitempty"`
+	Tags               []Tag  `json:"tags,omitempty"`
+	GroupFunction      string `json:"group_function,omitempty"` // valid: average, sum, min, max
+	GroupBy            string `json:"group_by,omitempty"`
+	SummaryFunction    string `json:"summary_function,omitempty"`    // valid: average, sum, min, max, count
+	DownsampleFunction string `json:"downsample_function,omitempty"` // valid: average, min, max, sum, count
+	Color              string `json:"color,omitempty"`
+	UnitsShort         string `json:"units_short,omitempty"`
+	UnitsLong          string `json:"units_long,omitempty"`
+	TransformFunction  string `json:"transform_function,omitempty"`
+	Period             int    `json:"period,omitempty"`
+	Min                int    `json:"min,omitempty"`
+	Max                int    `json:"max,omitempty"`
 }
 
 type Threshold struct {
-	Operator *string  `json:"operator,omitempty"`
-	Value    *float64 `json:"value,omitempty"`
-	Type     *string  `json:"type,omitempty"`
+	Operator string  `json:"operator,omitempty"`
+	Value    float64 `json:"value,omitempty"`
+	Type     string  `json:"type,omitempty"`
 }
 
 type ChartsCommunicator interface {

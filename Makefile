@@ -16,6 +16,12 @@ doc:
 test:
 	go test -v $(excluding_vendor)
 
+live_test:
+	cd _live-tests && go test -v
+
+super_test: test
+super_test: live_test
+
 vet:
 	go vet
 
