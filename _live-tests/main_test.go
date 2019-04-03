@@ -25,8 +25,11 @@ func TestMain(m *testing.M) {
 		log.Fatal("set APPOPTICS_TOKEN in the environment")
 	}
 
-	client = appoptics.NewClient(token)
-	// Uncomment the below to see response status/body stdout while tests run
-	//client = appoptics.NewClient(token, appoptics.SetDebugMode())
+	if debugMode := os.Getenv("AO_CLIENT_DEBUG"); debugMode != "" {
+		client = appoptics.NewClient(token, appoptics.SetDebugMode())
+	} else {
+		client = appoptics.NewClient(token)
+	}
+
 	os.Exit(m.Run())
 }
