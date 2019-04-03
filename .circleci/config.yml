@@ -31,5 +31,5 @@ jobs:
       - run:
           name: "Live Tests"
           command: |
-            export APPOPTICS_TOKEN=${APPOPTICS_TOKEN}
+            export APPOPTICS_TOKEN=$APPOPTICS_ACCESS_TOKEN
             make live_test
