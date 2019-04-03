@@ -24,4 +24,6 @@ jobs:
       # TODO: move this into a containerized build
       - run: go get -u github.com/golang/dep/cmd/dep
       - run: dep ensure
+      - command: |
+          export APPOPTICS_TOKEN=${APPOPTICS_TOKEN}
       - run: make super_test
