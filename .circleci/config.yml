@@ -33,4 +33,5 @@ jobs:
           environment:
             APPOPTICS_TOKEN: $APPOPTICS_ACCESS_TOKEN
           command: |
+            echo $APPOPTICS_TOKEN
             make live_test
