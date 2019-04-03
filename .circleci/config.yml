@@ -31,6 +31,6 @@ jobs:
       - run:
           name: "Live Tests"
           environment:
-            APPOPTICS_TOKEN=$APPOPTICS_ACCESS_TOKEN
+            APPOPTICS_TOKEN: $APPOPTICS_ACCESS_TOKEN
           command: |
             make live_test
