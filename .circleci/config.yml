@@ -25,11 +25,11 @@ jobs:
       - run: go get -u github.com/golang/dep/cmd/dep
       - run: dep ensure
       - run:
-        name: "Unit Tests"
-        command: |
-          make test
+          name: "Unit Tests"
+          command: |
+            make test
       - run:
-        name: "Live Tests"
-        command: |
-          export APPOPTICS_TOKEN=${APPOPTICS_TOKEN}
-          make live_test
+          name: "Live Tests"
+          command: |
+            export APPOPTICS_TOKEN=${APPOPTICS_TOKEN}
+            make live_test
