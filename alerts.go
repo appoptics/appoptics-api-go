@@ -24,6 +24,7 @@ type AlertCondition struct {
 	Threshold       float64 `json:"threshold,omitempty"`
 	SummaryFunction string  `json:"summary_function,omitempty"`
 	Duration        int     `json:"duration,omitempty"`
+	DetectReset     bool    `json:"detect_reset,omitempty"`
 	Tags            []*Tag  `json:"tags,omitempty"`
 }
 
