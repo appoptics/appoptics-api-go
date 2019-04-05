@@ -3,8 +3,6 @@ package live_tests
 import (
 	"testing"
 
-	"fmt"
-
 	"time"
 
 	"github.com/appoptics/appoptics-api-go"
@@ -55,7 +53,6 @@ func TestCharts(t *testing.T) {
 	})
 
 	t.Run("Update", func(t *testing.T) {
-		fmt.Printf("UPDATE CHART: %+v\n", chart)
 		otherName := "new-name"
 		chart.Name = otherName
 		updatedChart, err := client.ChartsService().Update(chart, spaceID)
