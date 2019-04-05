@@ -64,7 +64,8 @@ type ServiceAccessor interface {
 // ErrorResponse represents the response body returned when the API reports an error
 type ErrorResponse struct {
 	// Errors holds the error information from the API
-	Errors interface{} `json:"errors"`
+	Errors   interface{} `json:"errors"`
+	Response *http.Response
 }
 
 // QueryInfo holds pagination information coming from list actions
@@ -315,6 +316,7 @@ func clientVersionString() string {
 func checkError(resp *http.Response) error {
 	errResponse := &ErrorResponse{}
 	if resp.StatusCode >= 400 {
+		errResponse.Response = resp
 		if resp.ContentLength != 0 {
 			decoder := json.NewDecoder(resp.Body)
 			err := decoder.Decode(errResponse)
@@ -325,8 +327,7 @@ func checkError(resp *http.Response) error {
 			log.Debugf("error: %+v\n", errResponse)
 			return errResponse
 		}
-		msg := fmt.Sprintf("unknown error with status %d", resp.StatusCode)
-		return errors.New(msg)
+		return errResponse
 	}
 	return nil
 }
