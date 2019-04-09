@@ -5,13 +5,12 @@ import (
 
 	"github.com/appoptics/appoptics-api-go"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestAlertsService_List(t *testing.T) {
 	alertResponse, err := client.AlertsService().List()
-	if err != nil {
-		t.Errorf("error running List: %v", err)
-	}
+	require.Nil(t, err)
 
 	query := alertResponse.Query
 	alert := alertResponse.Alerts[0]
@@ -45,7 +44,7 @@ func TestAlertsService_List(t *testing.T) {
 }
 
 func TestAlertsService_Create(t *testing.T) {
-	alert, err := client.AlertsService().Create(&appoptics.Alert{})
+	alert, err := client.AlertsService().Create(&appoptics.AlertRequest{})
 	if err != nil {
 		t.Errorf("error running Create: %v", err)
 	}
@@ -66,12 +65,9 @@ func TestAlertsService_Create(t *testing.T) {
 
 func TestAlertsService_Retrieve(t *testing.T) {
 	alert, err := client.AlertsService().Retrieve(123)
-
-	if err != nil {
-		t.Errorf("error running Retrieve: %v", err)
-	}
-
+	require.Nil(t, err)
 	service := alert.Services[0]
+
 	serviceSetting := service.Settings
 
 	// Alert

@@ -34,7 +34,7 @@ func TestAlerts(t *testing.T) {
 	defer client.ServicesService().Delete(service.ID)
 
 	t.Run("Create", func(t *testing.T) {
-		newAlert, err := client.AlertsService().Create(testAlert("test", metric.Name))
+		newAlert, err := client.AlertsService().Create(testAlertRequest("test", metric.Name))
 		require.Nil(t, err)
 		assert.Equal(t, testAlert("test", metric.Name).Name, newAlert.Name)
 		alert = newAlert
@@ -63,7 +63,9 @@ func TestAlerts(t *testing.T) {
 
 	t.Run("Update", func(t *testing.T) {
 		alert.Name = "other.name"
-		err := client.AlertsService().Update(alert)
+		newRequest := testAlertRequest(alert.Name, metric.Name)
+		newRequest.ID = alert.ID
+		err := client.AlertsService().Update(newRequest)
 		assert.Nil(t, err)
 	})
 
@@ -71,6 +73,21 @@ func TestAlerts(t *testing.T) {
 		err := client.AlertsService().Delete(alert.ID)
 		require.Nil(t, err)
 	})
+}
+
+func testAlertRequest(n, metricName string) *appoptics.AlertRequest {
+	alertName := fmt.Sprintf("%s-%s", TestPrefix, n)
+	return &appoptics.AlertRequest{
+		Name:        alertName,
+		Description: "A Test Alert",
+		Conditions: []*appoptics.AlertCondition{
+			{
+				Type:       "above",
+				MetricName: metricName,
+				Threshold:  200,
+			},
+		},
+	}
 }
 
 func testAlert(n, metricName string) *appoptics.Alert {
