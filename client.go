@@ -43,10 +43,6 @@ var (
 	ErrBadStatus = errors.New("Received non-OK status from AppOptics POST")
 	client = &http.Client{
 		Timeout: 30 * time.Second,
-		Transport: &http.Transport{
-			MaxIdleConnsPerHost: 4,
-			IdleConnTimeout:     30 * time.Second,
-		},
 	}
 )
 
