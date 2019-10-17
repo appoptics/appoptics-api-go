@@ -33,6 +33,9 @@ var (
 	regexpIllegalNameChars = regexp.MustCompile("[^A-Za-z0-9.:_-]") // from https://www.AppOptics.com/docs/api/#measurements
 	// ErrBadStatus is returned if the AppOptics API returns a non-200 error code.
 	ErrBadStatus = errors.New("Received non-OK status from AppOptics POST")
+	client = &http.Client{
+		Timeout: 30 * time.Second,
+	}
 )
 
 // ServiceAccessor defines an interface for talking to via domain-specific service constructs
@@ -105,13 +108,7 @@ func NewClient(token string, opts ...func(*Client) error) *Client {
 	c := &Client{
 		token:   token,
 		baseURL: baseURL,
-		httpClient: &http.Client{
-			Timeout: 30 * time.Second,
-			Transport: &http.Transport{
-				MaxIdleConnsPerHost: 4,
-				IdleConnTimeout:     30 * time.Second,
-			},
-		},
+		httpClient: client,
 	}
 
 	c.alertsService = NewAlertsService(c)
