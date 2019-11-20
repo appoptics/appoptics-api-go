@@ -190,6 +190,14 @@ func SetDebugMode() ClientOption {
 	}
 }
 
+// SetHTTPClient allows the user to provide a custom http.Client configuration
+func SetHTTPClient(client *http.Client) ClientOption {
+	return func(c *Client) error {
+		c.httpClient = client
+		return nil
+	}
+}
+
 // AlertsService represents the subset of the API that deals with Alerts
 func (c *Client) AlertsService() AlertsCommunicator {
 	return c.alertsService
