@@ -244,6 +244,10 @@ func (c *Client) DefaultPaginationParameters(length int) *PaginationParameters {
 
 // Do performs the HTTP request on the wire, taking an optional second parameter for containing a response
 func (c *Client) Do(req *http.Request, respData interface{}) (*http.Response, error) {
+	if c.debugMode {
+		dumpRequest(req)
+	}
+
 	resp, err := c.httpClient.Do(req)
 
 	// error in performing request
@@ -307,12 +311,28 @@ func dumpResponse(resp *http.Response) {
 	fmt.Printf("response status: %s\n", resp.Status)
 	if resp.ContentLength != 0 {
 		if respBytes, err := ioutil.ReadAll(resp.Body); err != nil {
-			log.Printf("Error reading body: %s", err)
+			log.Printf("error reading body: %s", err)
 			return
 		} else {
 			resp.Body.Close()
 			resp.Body = ioutil.NopCloser(bytes.NewBuffer(respBytes))
 			log.Printf("response body: %s\n\n", string(respBytes))
 		}
+	}
+}
+
+// dumpRequest is a debugging function which dumps the HTTP request to stdout
+func dumpRequest(req *http.Request)  {
+	if req.Body == nil{
+		return
+	}
+
+	if reqBytes, err := ioutil.ReadAll(req.Body); err != nil {
+		log.Printf("error reading body: %s", err)
+		return
+	} else {
+		req.Body.Close()
+		req.Body = ioutil.NopCloser(bytes.NewBuffer(reqBytes))
+		log.Printf("request body: %s\n\n", string(reqBytes))
 	}
 }
