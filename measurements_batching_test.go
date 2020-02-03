@@ -2,6 +2,7 @@ package appoptics
 
 import (
 	"fmt"
+	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
 )
@@ -27,13 +28,11 @@ func TestBatchPersister(t *testing.T) {
 		for batch := range bp.batchChan {
 			batchCollection = append(batchCollection, batch)
 			if len(batchCollection) == batchCount {
-				bp.stopBatchingChan <- true
+				bp.stopBatchingChan <- struct{}{}
 			}
 		}
 
-		if len(batchCollection) != batchCount {
-			t.Errorf("expected batch count to be %d but was %d", batchCount, len(batchCollection))
-		}
+		assert.Equal(t, batchCount, len(batchCollection))
 	})
 
 	t.Run("respects push interval", func(t *testing.T) {
@@ -61,21 +60,19 @@ func TestBatchPersister(t *testing.T) {
 		for batch := range bp.batchChan {
 			batchCollection = append(batchCollection, batch)
 			if len(batchCollection[0].Measurements) == measurementsCount {
-				bp.stopBatchingChan <- true
+				bp.stopBatchingChan <- struct{}{}
 			}
 		}
 
 		measurementsInBatch := len(batchCollection[0].Measurements)
 
-		if measurementsInBatch != measurementsCount {
-			t.Errorf("expected Measurements in single batch to be %d but was %d", measurementsCount, measurementsInBatch)
-		}
+		assert.Equal(t, measurementsCount, measurementsInBatch)
 	})
 
 	t.Run("errors accumulate and stop batching at limit", func(t *testing.T) {
 		bp := NewBatchPersister(mms, false)
-		var pSig bool
-		var eSig bool
+		var pSig struct{}
+		var eSig struct{}
 		go bp.batchMeasurements()
 		go bp.managePersistenceErrors()
 
@@ -86,17 +83,8 @@ func TestBatchPersister(t *testing.T) {
 		pSig = <-bp.stopPersistingChan
 		eSig = <-bp.stopErrorChan
 
-		if !pSig {
-			t.Errorf("expected to find a value on the stopPersistingChan")
-		}
-
-		if !eSig {
-			t.Errorf("expected to find a value on the stopPersistingChan")
-		}
-
-		if len(bp.errors) != bp.errorLimit {
-			t.Errorf("expected errors count (%d) to equal error limit (%d) but it did not", len(bp.errors), bp.errorLimit)
-		}
-
+		assert.NotNil(t, pSig)
+		assert.NotNil(t, eSig)
+		assert.Equal(t, bp.errorLimit, len(bp.errors))
 	})
 }

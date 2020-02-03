@@ -1,7 +1,5 @@
 .PHONY: build clean doc test vet
 
-excluding_vendor := $(shell go list ./... | grep -v /vendor/)
-
 lib_name := appoptics-go
 
 build:
@@ -14,10 +12,10 @@ doc:
 	godoc -http=:8080 -index
 
 test:
-	go test -v $(excluding_vendor)
+	go test ./...
 
 live_test:
-	cd _live-tests && go test -v
+	cd _live-tests && go test ./...
 
 super_test: test
 super_test: live_test
