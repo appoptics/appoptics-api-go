@@ -33,11 +33,11 @@ type BatchPersister struct {
 	// batchChan is used to create MeasurementsBatches for persistence to AppOptics
 	batchChan chan *MeasurementsBatch
 	// stopBatchingChan is used to cease persisting MeasurementsBatches to AppOptics
-	stopBatchingChan chan bool
+	stopBatchingChan chan struct{}
 	// stopPersistingChan is used to cease persisting MeasurementsBatches to AppOptics
-	stopPersistingChan chan bool
+	stopPersistingChan chan struct{}
 	// stopErrorChan is used to cease the error checking for/select
-	stopErrorChan chan bool
+	stopErrorChan chan struct{}
 	// errorChan is used to tally errors that occur in batching/persisting
 	errorChan chan error
 	// maximumPushInterval is the max time (in milliseconds) to wait before pushing a batch whether its length is equal
@@ -54,9 +54,9 @@ func NewBatchPersister(mc MeasurementsCommunicator, sendStats bool) *BatchPersis
 		errorLimit:          DefaultPersistenceErrorLimit,
 		prepChan:            make(chan []Measurement),
 		batchChan:           make(chan *MeasurementsBatch),
-		stopBatchingChan:    make(chan bool),
-		stopErrorChan:       make(chan bool),
-		stopPersistingChan:  make(chan bool),
+		stopBatchingChan:    make(chan struct{}),
+		stopErrorChan:       make(chan struct{}),
+		stopPersistingChan:  make(chan struct{}),
 		errorChan:           make(chan error),
 		errors:              []error{},
 		maximumPushInterval: 2000,
@@ -78,7 +78,7 @@ func (bp *BatchPersister) MeasurementsSink() chan<- []Measurement {
 }
 
 // MeasurementsStopBatchingChannel gives calling code write-only access to the Measurements batching control channel
-func (bp *BatchPersister) MeasurementsStopBatchingChannel() chan<- bool {
+func (bp *BatchPersister) MeasurementsStopBatchingChannel() chan<- struct{} {
 	return bp.stopBatchingChan
 }
 
@@ -135,8 +135,8 @@ LOOP:
 				}
 			}
 			close(bp.batchChan)
-			bp.stopPersistingChan <- true
-			bp.stopErrorChan <- true
+			bp.stopPersistingChan <- struct{}{}
+			bp.stopErrorChan <- struct{}{}
 			break LOOP
 		}
 	}
@@ -186,7 +186,7 @@ LOOP:
 		case err := <-bp.errorChan:
 			bp.errors = append(bp.errors, err)
 			if len(bp.errors) == bp.errorLimit {
-				bp.stopBatchingChan <- true
+				bp.stopBatchingChan <- struct{}{}
 				break LOOP
 			}
 		case <-bp.stopErrorChan:
