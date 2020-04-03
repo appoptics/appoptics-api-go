@@ -323,7 +323,7 @@ func dumpRequest(req *http.Request)  {
 		return
 	}
 
-	dump, err := httputil.DumpRequest(req, true);
+	dump, err := httputil.DumpRequestOut(req, true);
 	if err != nil{
 		log.Printf("error dumping request: %s", err)
 		return
