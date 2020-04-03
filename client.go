@@ -6,14 +6,13 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"regexp"
 
 	"fmt"
 
 	"time"
-
-	"io/ioutil"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -309,16 +308,13 @@ func checkError(resp *http.Response) error {
 // dumpResponse is a debugging function which dumps the HTTP response to stdout
 func dumpResponse(resp *http.Response) {
 	fmt.Printf("response status: %s\n", resp.Status)
-	if resp.ContentLength != 0 {
-		if respBytes, err := ioutil.ReadAll(resp.Body); err != nil {
-			log.Printf("error reading body: %s", err)
-			return
-		} else {
-			resp.Body.Close()
-			resp.Body = ioutil.NopCloser(bytes.NewBuffer(respBytes))
-			log.Printf("response body: %s\n\n", string(respBytes))
-		}
+	dump, err := httputil.DumpResponse(resp, true)
+
+	if err != nil{
+		log.Printf("error dumping response: %s", err)
+		return
 	}
+	log.Printf("response body: %s\n\n", string(dump))
 }
 
 // dumpRequest is a debugging function which dumps the HTTP request to stdout
@@ -327,12 +323,11 @@ func dumpRequest(req *http.Request)  {
 		return
 	}
 
-	if reqBytes, err := ioutil.ReadAll(req.Body); err != nil {
-		log.Printf("error reading body: %s", err)
+	dump, err := httputil.DumpRequestOut(req, true);
+	if err != nil{
+		log.Printf("error dumping request: %s", err)
 		return
-	} else {
-		req.Body.Close()
-		req.Body = ioutil.NopCloser(bytes.NewBuffer(reqBytes))
-		log.Printf("request body: %s\n\n", string(reqBytes))
 	}
+
+	log.Printf("request body: %s\n\n", string(dump))
 }
