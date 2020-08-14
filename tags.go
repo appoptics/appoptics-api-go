@@ -3,6 +3,7 @@ package appoptics
 import (
 	"bytes"
 	"fmt"
+	"sort"
 	"strings"
 )
 
@@ -29,10 +30,14 @@ func MetricWithTags(name string, tags map[string]interface{}) string {
 	if tags == nil {
 		return name
 	}
-
 	b := bytes.NewBufferString(name)
-
-	for k, v := range tags {
+	keys := make([]string, 0, len(tags))
+	for k := range tags {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	for _, k := range keys {
+		v := tags[k]
 		b.WriteString(MetricTagSeparator)
 		b.WriteString(k)
 		b.WriteString(MetricTagSeparator)
