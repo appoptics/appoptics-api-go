@@ -6,7 +6,7 @@ import (
 )
 
 type ReporterOpts struct {
-	measurementSet    *MeasurementSet
+	MeasurementSet    *MeasurementSet
 	measurementsComms []MeasurementsCommunicator
 	period            time.Duration
 	metricPrefix      string
@@ -33,7 +33,7 @@ func withDefaultGlobalTags(opts *ReporterOpts) {
 
 func WithMeasurementSet(measurementSet *MeasurementSet) ReporterOptsFn {
 	return func(opts *ReporterOpts) {
-		opts.measurementSet = measurementSet
+		opts.MeasurementSet = measurementSet
 	}
 }
 

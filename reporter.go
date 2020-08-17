@@ -172,7 +172,7 @@ func (r *Reporter) flushReportsForever() {
 		case <-r.stopChan:
 			shutdown = true
 		}
-		report := r.measurementSet.Reset()
+		report := r.MeasurementSet.Reset()
 		if len(report.Aggregators) > 0 || len(report.Counts) > 0 {
 			r.flushReport(report, nextInterval)
 		}
