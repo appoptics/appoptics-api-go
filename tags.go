@@ -19,10 +19,11 @@ type Tag struct {
 // the metric name and tags as a key for aggregation with measurements matching
 // the same metric name and tags.
 //
-// Users can build these strings internally if desired, using a format like below:
+// Users can build these strings internally if desired, using a format like below,
+// substituting MetricTagSeparator for the "|" pipes:
 // - "metric_name"
-// - "metric_name\x00tag_1_key\x00tag_1_value"
-// - "metric_name\x00tag_1_key\x00tag_1_value\x00tag_2_key\x00tag_2_value" ...
+// - "metric_name|tag_1_key|tag_1_value"
+// - "metric_name|tag_1_key|tag_1_value|tag_2_key|tag_2_value" ...
 const MetricTagSeparator = "\x00"
 
 func MetricWithTags(name string, tags map[string]interface{}) string {
