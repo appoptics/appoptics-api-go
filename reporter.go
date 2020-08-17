@@ -5,6 +5,7 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
+	"golang.org/x/net/context"
 )
 
 const (
@@ -48,13 +49,15 @@ func (r *Reporter) Start() {
 }
 
 // Close forces an immediate flush of the metrics and stops further reporting.
-func (r *Reporter) Close() error {
+func (r *Reporter) Close(ctx context.Context) error {
 	// Notify the flushReportsForever worker that it should exit.
 	r.stopOnce.Do(func() {
 		close(r.stopChan)
 	})
 	r.stoppedWaitGroup.Add(len(r.measurementsComms))
-	// Wait up to 5 seconds for all postMeasurementBatches workers to return.
+	// Wait for all postMeasurementBatches workers to return.
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
 	allDone := make(chan struct{})
 	go func() {
 		defer close(allDone)
@@ -62,9 +65,10 @@ func (r *Reporter) Close() error {
 	}()
 	select {
 	case <-allDone:
-	case <-time.After(5 * time.Second):
+		return nil
+	case <-ctx.Done():
+		return ctx.Err()
 	}
-	return nil
 }
 
 func (r *Reporter) postMeasurementBatches(workerIndex int) {
