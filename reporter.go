@@ -30,6 +30,9 @@ func NewReporter(optFns ...ReporterOptsFn) *Reporter {
 	for _, optFn := range optFns {
 		optFn(opts)
 	}
+	if opts.MeasurementSet == nil {
+		opts.MeasurementSet = NewMeasurementSet()
+	}
 	r := &Reporter{
 		ReporterOpts: opts,
 		stopChan:     make(chan struct{}),
