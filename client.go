@@ -4,19 +4,18 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"regexp"
-
-	"fmt"
-
+	"strconv"
 	"time"
 
 	log "github.com/sirupsen/logrus"
 )
-
 
 const (
 	// MeasurementPostMaxBatchSize defines the max number of Measurements to send to the API at once
@@ -32,7 +31,7 @@ var (
 	regexpIllegalNameChars = regexp.MustCompile("[^A-Za-z0-9.:_-]") // from https://www.AppOptics.com/docs/api/#measurements
 	// ErrBadStatus is returned if the AppOptics API returns a non-200 error code.
 	ErrBadStatus = errors.New("Received non-OK status from AppOptics POST")
-	client = &http.Client{
+	client       = &http.Client{
 		Timeout: 30 * time.Second,
 	}
 )
@@ -90,8 +89,8 @@ type ClientOption func(*Client) error
 func NewClient(token string, opts ...func(*Client) error) *Client {
 	baseURL, _ := url.Parse(defaultBaseURL)
 	c := &Client{
-		token:   token,
-		baseURL: baseURL,
+		token:      token,
+		baseURL:    baseURL,
 		httpClient: client,
 	}
 
@@ -231,7 +230,6 @@ func (c *Client) SpacesService() SpacesCommunicator {
 	return c.spacesService
 }
 
-
 // DefaultPaginationParameters provides a *PaginationParameters with minimum required fields
 func (c *Client) DefaultPaginationParameters(length int) *PaginationParameters {
 	return &PaginationParameters{
@@ -291,11 +289,10 @@ func checkError(resp *http.Response) error {
 		errResponse.Status = resp.Status
 		errResponse.Response = resp
 		if resp.ContentLength != 0 {
-			decoder := json.NewDecoder(resp.Body)
-			err := decoder.Decode(errResponse)
-
+			body, _ := ioutil.ReadAll(resp.Body)
+			err := json.Unmarshal(body, errResponse)
 			if err != nil {
-				return err
+				errResponse.Errors = strconv.Quote(string(body))
 			}
 			log.Debugf("error: %+v\n", errResponse)
 			return errResponse
@@ -310,7 +307,7 @@ func dumpResponse(resp *http.Response) {
 	fmt.Printf("response status: %s\n", resp.Status)
 	dump, err := httputil.DumpResponse(resp, true)
 
-	if err != nil{
+	if err != nil {
 		log.Printf("error dumping response: %s", err)
 		return
 	}
@@ -318,13 +315,13 @@ func dumpResponse(resp *http.Response) {
 }
 
 // dumpRequest is a debugging function which dumps the HTTP request to stdout
-func dumpRequest(req *http.Request)  {
-	if req.Body == nil{
+func dumpRequest(req *http.Request) {
+	if req.Body == nil {
 		return
 	}
 
-	dump, err := httputil.DumpRequestOut(req, true);
-	if err != nil{
+	dump, err := httputil.DumpRequestOut(req, true)
+	if err != nil {
 		log.Printf("error dumping request: %s", err)
 		return
 	}
