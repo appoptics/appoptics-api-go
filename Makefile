@@ -3,7 +3,7 @@
 lib_name := appoptics-go
 
 build:
-	go build -i -o $(lib_name)
+	go build -o $(lib_name)
 
 clean:
 	rm $(lib_name)
