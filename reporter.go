@@ -1,73 +1,93 @@
 package appoptics
 
 import (
-	"math/rand"
-	"os"
+	"sync"
 	"time"
 
 	log "github.com/sirupsen/logrus"
+	"golang.org/x/net/context"
 )
 
 const (
-	outputMeasurementsIntervalSeconds = 15
-	outputMeasurementsInterval        = outputMeasurementsIntervalSeconds * time.Second
-	maxRetries                        = 3
-	maxMeasurementsPerBatch           = 1000
+	maxMeasurementsPerBatch = 1000
 )
 
 // Reporter provides a way to persist data from a set collection of Aggregators and Counters at a regular interval
 type Reporter struct {
-	measurementSet   *MeasurementSet
-	measurementsComm MeasurementsCommunicator
-	prefix           string
-
-	batchChan             chan *MeasurementsBatch
-	measurementSetReports chan *MeasurementSetReport
-
-	globalTags map[string]string
+	*ReporterOpts
+	batchChans       []chan *MeasurementsBatch
+	stopOnce         sync.Once
+	stopChan         chan struct{}
+	stoppedWaitGroup sync.WaitGroup
 }
 
 // NewReporter returns a reporter for a given MeasurementSet, providing a way to sync metric information
 // to AppOptics for a collection of running metrics.
-func NewReporter(measurementSet *MeasurementSet, communicator MeasurementsCommunicator, prefix string) *Reporter {
-	r := &Reporter{
-		measurementSet:        measurementSet,
-		measurementsComm:      communicator,
-		prefix:                prefix,
-		batchChan:             make(chan *MeasurementsBatch, 100),
-		measurementSetReports: make(chan *MeasurementSetReport, 1000),
+func NewReporter(optFns ...ReporterOptsFn) *Reporter {
+	opts := &ReporterOpts{}
+	*opts = defaultReporterOpts
+	withDefaultGlobalTags(opts)
+	for _, optFn := range optFns {
+		optFn(opts)
 	}
-	r.initGlobalTags()
+	if opts.MeasurementSet == nil {
+		opts.MeasurementSet = NewMeasurementSet()
+	}
+	r := &Reporter{
+		ReporterOpts: opts,
+		stopChan:     make(chan struct{}),
+	}
+	for range r.measurementsComms {
+		r.batchChans = append(r.batchChans, make(chan *MeasurementsBatch, 10))
+	}
 	return r
 }
 
 // Start kicks off two goroutines that help batch and report metrics measurements to AppOptics.
 func (r *Reporter) Start() {
-	go r.postMeasurementBatches()
+	for workerIndex := range r.measurementsComms {
+		go r.postMeasurementBatches(workerIndex)
+	}
 	go r.flushReportsForever()
 }
 
-func (r *Reporter) initGlobalTags() {
-	hostname, err := os.Hostname()
-	if err != nil {
-		hostname = "na"
-	}
-	r.globalTags = map[string]string{
-		"hostname": hostname + os.Getenv("HOST_SUFFIX"),
+// Close forces an immediate flush of the metrics and stops further reporting.
+func (r *Reporter) Close(ctx context.Context) error {
+	// Notify the flushReportsForever worker that it should exit.
+	r.stopOnce.Do(func() {
+		close(r.stopChan)
+	})
+	r.stoppedWaitGroup.Add(len(r.measurementsComms))
+	// Wait for all postMeasurementBatches workers to return.
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+	allDone := make(chan struct{})
+	go func() {
+		defer close(allDone)
+		r.stoppedWaitGroup.Wait()
+	}()
+	select {
+	case <-allDone:
+		return nil
+	case <-ctx.Done():
+		return ctx.Err()
 	}
 }
 
-func (r *Reporter) postMeasurementBatches() {
-	for batch := range r.batchChan {
+func (r *Reporter) postMeasurementBatches(workerIndex int) {
+	defer r.stoppedWaitGroup.Done()
+	batchChan := r.batchChans[workerIndex]
+	measurementsComm := r.measurementsComms[workerIndex]
+	for batch := range batchChan {
 		tryCount := 0
 		for {
 			log.Debug("Uploading AppOptics measurements batch", "time", time.Unix(batch.Time, 0), "numMeasurements", len(batch.Measurements), "globalTags", r.globalTags)
-			_, err := r.measurementsComm.Create(batch)
+			_, err := measurementsComm.Create(batch)
 			if err == nil {
 				break
 			}
 			tryCount++
-			aborting := tryCount == maxRetries
+			aborting := tryCount == r.maxPostRetries
 			log.Error("Error uploading AppOptics measurements batch", "err", err, "tryCount", tryCount, "aborting", aborting)
 			if aborting {
 				break
@@ -76,34 +96,33 @@ func (r *Reporter) postMeasurementBatches() {
 	}
 }
 
-func (r *Reporter) flushReport(report *MeasurementSetReport) {
-	batchTimeUnixSecs := (time.Now().Unix() / outputMeasurementsIntervalSeconds) * outputMeasurementsIntervalSeconds
-
+func (r *Reporter) flushReport(report *MeasurementSetReport, reportTime time.Time) {
 	var batch *MeasurementsBatch
 	resetBatch := func() {
 		batch = &MeasurementsBatch{
-			Time:   batchTimeUnixSecs,
-			Period: outputMeasurementsIntervalSeconds,
+			Time:   reportTime.Unix(),
+			Period: int64(r.period / time.Second),
 		}
 	}
 	flushBatch := func() {
-		r.batchChan <- batch
+		for _, batchChan := range r.batchChans {
+			batchChan <- batch
+		}
 	}
 	addMeasurement := func(measurement Measurement) {
 		batch.Measurements = append(batch.Measurements, measurement)
-		// AppOptics API docs advise sending very large numbers of metrics in multiple HTTP requests; so we'll flush
-		// batches of 500 measurements at a time.
+		// AppOptics API docs advise sending very large numbers of metrics in multiple HTTP requests; so we'll limit each
+		// request to a batch of 1000 measurements.
 		if len(batch.Measurements) >= maxMeasurementsPerBatch {
 			flushBatch()
 			resetBatch()
 		}
 	}
 	resetBatch()
-	report.Counts["num_measurements"] = int64(len(report.Counts)) + int64(len(report.Aggregators)) + 1
 	for key, value := range report.Counts {
 		metricName, tags := parseMeasurementKey(key)
 		m := Measurement{
-			Name: r.prefix + regexpIllegalNameChars.ReplaceAllString(metricName, "_"),
+			Name: r.metricPrefix + regexpIllegalNameChars.ReplaceAllString(metricName, "_"),
 			Tags: r.mergeGlobalTags(tags),
 		}
 		if value != 0 {
@@ -115,7 +134,7 @@ func (r *Reporter) flushReport(report *MeasurementSetReport) {
 	for key, agg := range report.Aggregators {
 		metricName, tags := parseMeasurementKey(key)
 		m := Measurement{
-			Name: r.prefix + regexpIllegalNameChars.ReplaceAllString(metricName, "_"),
+			Name: r.metricPrefix + regexpIllegalNameChars.ReplaceAllString(metricName, "_"),
 			Tags: r.mergeGlobalTags(tags),
 		}
 		if agg.Sum != 0 {
@@ -141,15 +160,25 @@ func (r *Reporter) flushReport(report *MeasurementSetReport) {
 }
 
 func (r *Reporter) flushReportsForever() {
-	// Sleep for a random duration between 0 and outputMeasurementsInterval in order to randomize the counters output cycle.
-	time.Sleep(time.Duration(rand.Int63n(int64(outputMeasurementsInterval))))
-	report := r.measurementSet.Reset()
-	r.flushReport(report)
-	// After the initial random sleep, start a regular interval timer. This will output measurements at a consistent time
-	// modulo outputMeasurementsInterval.
-	for range time.Tick(outputMeasurementsInterval) {
-		report := r.measurementSet.Reset()
-		r.flushReport(report)
+	defer func() {
+		for _, batchChan := range r.batchChans {
+			close(batchChan)
+		}
+	}()
+	shutdown := false
+	for !shutdown {
+		// Sleep until the beginning of the next reporting period.
+		now := time.Now()
+		nextInterval := now.Truncate(r.period).Add(r.period)
+		select {
+		case <-time.After(nextInterval.Sub(now)):
+		case <-r.stopChan:
+			shutdown = true
+		}
+		report := r.MeasurementSet.Reset()
+		if len(report.Aggregators) > 0 || len(report.Counts) > 0 {
+			r.flushReport(report, nextInterval)
+		}
 	}
 }
 
