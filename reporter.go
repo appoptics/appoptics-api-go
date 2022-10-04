@@ -137,12 +137,8 @@ func (r *Reporter) flushReport(report *MeasurementSetReport, reportTime time.Tim
 			Name: r.metricPrefix + regexpIllegalNameChars.ReplaceAllString(metricName, "_"),
 			Tags: r.mergeGlobalTags(tags),
 		}
-		if agg.Sum != 0 {
-			m.Sum = agg.Sum
-		}
-		if agg.Count != 0 {
-			m.Count = agg.Count
-		}
+		m.Sum = agg.Sum
+		m.Count = agg.Count
 		if agg.Min != 0 {
 			m.Min = agg.Min
 		}
