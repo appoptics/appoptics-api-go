@@ -1,6 +1,6 @@
 module github.com/appoptics/appoptics-api-go
 
-go 1.22.0
+go 1.22
 
 require (
 	github.com/gorilla/mux v1.6.2
