@@ -2,6 +2,7 @@ package appoptics
 
 import (
 	"bytes"
+	"compress/gzip"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -61,7 +62,8 @@ func TestMeasurementsServiceCreate(t *testing.T) {
 
 	// unmarshal JSON and assert
 	buf := new(bytes.Buffer)
-	_, err = buf.ReadFrom(req.Body)
+	gzipReader, err := gzip.NewReader(req.Body)
+	_, err = buf.ReadFrom(gzipReader)
 	assert.NoError(t, err)
 	data := make(map[string]interface{})
 	err = json.Unmarshal(buf.Bytes(), &data)
