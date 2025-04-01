@@ -2,6 +2,7 @@ package appoptics
 
 import (
 	"bytes"
+	"compress/gzip"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -125,10 +126,12 @@ func (c *Client) NewRequest(method, path string, body interface{}) (*http.Reques
 
 	if body != nil {
 		buffer = &bytes.Buffer{}
-		encodeErr := json.NewEncoder(buffer).Encode(body)
+		gzipWriter := gzip.NewWriter(buffer)
+		encodeErr := json.NewEncoder(gzipWriter).Encode(body)
 		if encodeErr != nil {
 			log.Println(encodeErr)
 		}
+		_ = gzipWriter.Close()
 	}
 	req, err := http.NewRequest(method, requestURL.String(), buffer)
 
@@ -140,6 +143,7 @@ func (c *Client) NewRequest(method, path string, body interface{}) (*http.Reques
 	req.Header.Set("Accept", defaultMediaType)
 	req.Header.Set("Content-Type", defaultMediaType)
 	req.Header.Set("User-Agent", c.completeUserAgentString())
+	req.Header.Set("Content-Encoding", "gzip")
 
 	return req, nil
 }
