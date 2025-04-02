@@ -2,8 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/golang:1.13
-    working_directory: /go/src/github.com/appoptics/appoptics-api-go
+      - image: cimg/go:1.24.1
     steps:
       - checkout
 
