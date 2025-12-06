@@ -1,4 +1,8 @@
 # appoptics-api-go
+
+> [!CAUTION]
+> AppOptics has reached end of service life. This codebase is no longer maintained, please migrate to [SolarWinds Observability](https://www.solarwinds.com/solarwinds-observability) and [SolarWinds APM Go](https://github.com/solarwinds/apm-go).
+
 The official Go client for the [AppOptics metrics API](https://docs.appoptics.com/kb/custom_metrics/api/).
 
 [![Documentation](https://godoc.org/github.com/appoptics/appoptics-api-go?status.svg)](https://godoc.org/github.com/appoptics/appoptics-api-go)
